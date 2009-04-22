@@ -1,0 +1,29 @@
+{% extends "admin/change_form.html" %}
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="/admin/">Home</a> &rsaquo; Election Statistics
+</div>
+{% endblock %}
+{% block content %}
+<div id="content-main">
+  <h1>Statistics for {{election}} Election</h1>
+  {% for ballot in election.ballots.all %}
+  <h2>Ballot {{ballot}}</h2>
+  <table cellspacing="0" cellpadding="0" border="1">
+    <tr>
+      <th>Candidate</th>
+      <th>
+        Total {% ifequal ballot.type "Pl" %}Votes{% else %}Points{% endifequal %}
+      </th>
+    </tr>
+    {% for candidate,result in ballot.get_candidate_stats %}
+      <tr>
+        <td>{{candidate}}</td>
+        <td>{{result}}</td>
+      </tr>
+    {% endfor %}
+  </table>
+  <br/>
+  {% endfor %}
+</div>
+{% endblock %}

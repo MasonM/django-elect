@@ -1,0 +1,22 @@
+<table cellspacing="0" cellpadding="3">
+  <tr>
+    <th><h4>Ballot</h4></th>
+    <th><h4>Candidates Selected</h4></th>
+  </tr>
+{% for ballot,candidateVotes in vote.get_details %}
+  <tr>
+    <td><p>{{ballot.description}}</p></td>
+    <td>
+      <p>
+      {% if not candidateVotes %}
+        None
+      {% else %}
+        {% for cv in candidateVotes %}
+          {{cv.candidate.get_name}}{% if cv.point %}( {{cv.point}} points ){% endif %}{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      {% endif %}
+      </p>
+    </td>
+  </tr>
+{% endfor %}
+</table>

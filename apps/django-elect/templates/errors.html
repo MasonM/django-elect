@@ -1,0 +1,17 @@
+<div class="notice" id="error{{id}}">
+    <a name="error{{id}}"></a>
+    <img src="/media/error.gif" alt="Error"/>
+    Please correct the errors below and try again.
+    <ul class="error_list">
+    {% for error_list in error_dict %}
+        {% for error in error_list.1 %}
+        <li>
+            {% if error_list.0 %}
+            <div class="error_message"> {{error_list.0}}:</div>
+            {% endif %}
+            {{error}}
+        </li>
+        {% endfor %}
+    {% endfor %}
+    </ul>
+</div>

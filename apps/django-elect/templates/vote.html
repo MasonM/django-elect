@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load show_errors %}
+{% load show_notice %}
+{% block javascript %}
+<script type="text/javascript" language="Javascript" src="/media/utils.js">
+</script>
+<script type="text/javascript">
+function focusError() {
+    //jump to first error message on page load, if any
+    if(document.getElementById("error0")) {
+        window.location.hash = "error0";
+    }
+}
+addEvent(window, "load", focusError);
+</script>
+{% endblock %}
+{% block main %}
+<form method="POST" action="index.html">
+  <h2>{{election}} Election</h2>
+  <p>
+    {{election.introduction|safe}}
+  </p>
+{% for form in forms %}
+  <div class="section">
+    <div class="heading">
+      <b>{{form.ballot.description}}</b> - {{form.ballot.get_type_display}}
+    </div>
+    <div class="content">
+      <p>
+      {% if form.ballot.introduction_override %}
+        {{form.ballot.introduction_override|safe}}
+      {% else %}
+        {% ifequal form.ballot.type "Pl" %}
+          Place a checkmark next to {{form.ballot.seats_available}} or 
+          fewer candidates.
+        {% else %}
+          Rank your preferencies in order, selecting 1 for your first choice,
+          2 for your second choice, and so on. Leave the drop-down box as "0"
+          if you do not wish to rank a particular candidate. 
+          No two candidates may receive the same ranking. 
+        {% endifequal %}
+        {% if form.ballot.has_incumbents %}
+          An asterisk before a name indicates an incumbent.
+        {% endif %}
+      {% endif %}
+      {% if notice %}
+         {% show_notice notice %}
+      {% endif %}
+      {% if form.errors %}
+        {% show_errors form %}
+      {% endif %}
+      </p>
+      <table border="0" width="490">
+        <tr>
+          <th>&nbsp;</th>
+          <th>Name</th>
+          <th>Institution</th>
+          <th>Picture</th>
+        </tr>
+        {% for field in form %}
+          {{ field }}
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+  <br/>
+{% endfor %}
+  <input type="submit" name="vote" value="Submit Vote"/>
+</form>
+{% endblock %}

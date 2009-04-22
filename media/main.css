@@ -1,0 +1,50 @@
+img {
+  display: block;
+}
+
+a img {
+  border: 0;
+}
+
+div#main {
+  border-top: solid thin gray;
+}
+
+.nomarker li {
+  list-style-type: none !important;
+} 
+
+.clearer {
+  clear: both;
+}
+
+.small-message {
+  font-style: italic;
+  font-size: 10px;
+}
+
+/* styles for notices and error message */
+.notice {
+  width: 80%;
+  background-color: #FFFFE0;
+  border: 1px #D3D3D3 solid;
+  margin: 2px 10px 15px 18px;
+  padding: 5px;
+}
+
+.notice img {
+  display: inline;
+  padding-right: 5px;
+}
+
+.error_list {
+  list-style-type: disc;
+}
+
+.error_list div {
+  display: inline;
+}
+
+.error_list .error_message {
+  font-weight: bold;
+}

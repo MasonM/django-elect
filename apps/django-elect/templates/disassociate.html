@@ -1,0 +1,30 @@
+{% extends "admin/change_form.html" %}
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="/admin/">Home</a> &rsaquo; Disassociate Accounts
+</div>
+{% endblock %}
+{% block content %}
+<div id="content-main">
+  {% if success %}
+  <p>
+    Votes for the {{election}} election have been succesfully disassociated from
+    the voter accounts.
+  </p>
+  <a href="/admin">Return to Admin Page</a>
+  {% else %}
+  <p>
+    Clicking "Disassociate" will irreversibly disassociate all votes for the 
+    {{election}}  election from the account that entered the vote. 
+    <br/>
+    This makes it impossible to tell who cast what vote, thus protecting 
+    voter identity. All other data will remain.
+    <br/><br/>
+    Please make sure this is what you want before proceeding.
+  </p>
+  <form method="POST">
+    <input type="submit" name="confirm" value="Disassociate Accounts">
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

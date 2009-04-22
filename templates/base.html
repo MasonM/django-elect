@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>Election Test | {% block title %}{% endblock %}</title>
+        {% block stylesheets %}{% endblock %}
+        {% block javascript %}{% endblock %}
+        <link rel="stylesheet" type="text/css" href="/media/main.css"/>
+        <style type="text/css" media="screen">
+            @import "/media/hssonlineCache/css/style.css";
+        </style>
+    </head>
+    <body>
+        <div id="header">
+          <a name="top" id="top"></a>
+          <h1 id="dept"><a href="index.html">Election</a></h1>
+        </div>
+        <div id="mainContainer">
+          <div id="main">
+            {% block main %}{% endblock %}
+          </div>
+        </div>
+    </body>
+</html>
