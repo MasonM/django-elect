@@ -10,7 +10,9 @@ class Election(models.Model):
     Represents elections. which can be composed of one or more ballots.
     Voting only allowed between vote_start and vote_end dates.
     """
-    name = models.CharField(max_length=255, blank=False, unique=True)
+    name = models.CharField(max_length=255, blank=False, unique=True,
+        help_text="The name field is used to identify elections and must be "+\
+        "unique. It will be shown to users." )
     introduction = models.TextField(blank=True,
         help_text="This is printed at the top of the voting page below "+\
         "the header. Enter the text as HTML.")
