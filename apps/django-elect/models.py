@@ -66,10 +66,9 @@ class Ballot(models.Model):
         help_text="Change this if you want to customize the order in which "+\
         "ballots are shown for an election.")    
     description = models.CharField(max_length=255, blank=True)
-    introduction_override = models.TextField(blank=True,
-        help_text="If this field is non-empty, it will replace the default "+\
-        "text shown below the ballot header on the voting page. Enter the "+\
-        "text as HTML.")
+    introduction = models.TextField(blank=True,
+        help_text="If this field is non-empty, it will be shown elow the "+\
+        "ballot header on the voting page. Enter the text as HTML.")
     type = models.CharField(max_length=2, blank=False, choices=TYPES)
     seats_available = models.PositiveSmallIntegerField()
     write_in_available = models.BooleanField(default=True)

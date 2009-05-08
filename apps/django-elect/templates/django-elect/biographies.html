@@ -7,8 +7,8 @@
 <div class="section">
     <h3 class="heading">{{ballot.description}}</h3>
     <div class="content">
-  {% if ballot.introduction_override %}
-      <p>{{ballot.introduction_override}}</p>
+  {% if ballot.introduction %}
+      <p>{{ballot.introduction}}</p>
   {% endif %}
   {% for candidate in candidates %}
       <a name="{{candidate.get_name|urlencode}}"></a>
@@ -25,4 +25,9 @@
 </div>
 <hr/>
 {% endfor %}
+{% if election.voting_allowed %}
+<p>
+  <a href="/election/">Click here to vote.</a>
+</p>
+{% endif %}
 {% endblock %}
