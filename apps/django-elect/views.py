@@ -11,10 +11,7 @@ from forms import PluralityVoteForm, PreferentialVoteForm
 
 
 def biographies(request):
-    try:
-        election = Election.objects.latest()
-    except Election.DoesNotExist:
-        return HttpResponse("No elections have been entered yet.")
+    election = Election.get_latest_or_404()
     ballot_candidates = dict((b, b.candidates_with_biographies())
         for b in election.ballots.all() if b.candidates_with_biographies())
     return render_to_response('election/biographies.html', {
@@ -81,10 +78,7 @@ def disassociate_accounts(request, id=''):
 
 @login_required
 def vote(request):
-    try:
-        election = Election.objects.latest()
-    except Election.DoesNotExist:
-        return HttpResponse("No elections have been entered yet.")
+    election = Election.get_latest_or_404()
     voting_allowed = election and election.voting_allowed()
     if not voting_allowed or election.has_voted(request.user):
         # they aren't supposed to be on this page

@@ -1,5 +1,6 @@
 from datetime import date
 
+from django.http import Http404
 from django.db import models
 from django.db.models import Q
 from django.contrib.auth.models import User
@@ -46,6 +47,17 @@ class Election(models.Model):
         """
         cursor.execute(query % self.pk)
         return cursor.rowcount
+
+    @staticmethod
+    def get_latest_or_404():
+        """
+        Similar to the get_object_or_404() function, except returns the
+        latest Election instead.
+        """
+        try:
+            return Election.objects.latest()
+        except Election.DoesNotExist:
+            raise Http404("No elections have been entered yet.")
 
     class Meta:
         ordering = ['vote_start']
