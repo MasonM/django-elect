@@ -66,7 +66,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
 
-ROOT_URLCONF = 'election.urls'
+ROOT_URLCONF = 'example_project.urls'
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
@@ -76,7 +76,7 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
-    'election.django_elect',
+    'django_elect',
     'django.contrib.admin',
     'django.contrib.admindocs',
     'django.contrib.auth',
