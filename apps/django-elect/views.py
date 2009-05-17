@@ -10,6 +10,19 @@ from models import Election, Vote
 from forms import PluralityVoteForm, PreferentialVoteForm
 
 
+def biographies(request):
+    try:
+        election = Election.objects.latest()
+    except Election.DoesNotExist:
+        return HttpResponse("No elections have been entered yet.")
+    ballot_candidates = dict((b, b.candidates_with_biographies())
+        for b in election.ballots.all() if b.candidates_with_biographies())
+    return render_to_response('election/biographies.html', {
+        'election': election,
+        'ballot_candidates': ballot_candidates.items(),
+    })
+
+
 @staff_member_required
 @never_cache
 def statistics(request):

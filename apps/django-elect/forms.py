@@ -32,15 +32,11 @@ class CandidateRowWidget(forms.Select):
         self.form_widget = form_widget
 
     def render(self, name, value, attrs=None, choices=()):
-        ballot = self.candidate.ballot
         candidate_name = self.candidate.get_name()
-        if ballot.election.biographies_url:
-            # if biographies link was specified, then make each candidate's
-            # name a link to the appropriate anchor
-            anchor_target = "%s%s" % (self.candidate.first_name.strip(),
-                self.candidate.last_name.strip())
-            link = "%s#%s" % (ballot.election.biographies_url,
-                urlquote(anchor_target))
+        if self.candidate.biography:
+            # make candidate's name a link to the appropriate anchor
+            # on the auto-generated biographies page
+            link = "/election/biographies/#" + urlquote(candidate_name)
             candidate_name = '<a href="%s">%s</a>' % (link, candidate_name)
         select = self.form_widget.render(name, value)
         return mark_safe(self.template.substitute({

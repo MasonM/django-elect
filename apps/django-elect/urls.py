@@ -8,6 +8,7 @@ urlpatterns = patterns('django.views.generic.simple',
         'template': 'django-elect/success.html'
     }),
 ) + patterns('',
+    url(r'^biographies', views.biographies),
     url(r'^statistics', views.statistics),
     url(r'^spreadsheet', views.generate_spreadsheet),
     url(r'^disassociate/(?P<id>\d+)?', views.disassociate_accounts),

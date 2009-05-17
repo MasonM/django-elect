@@ -18,10 +18,6 @@ class Election(models.Model):
         "the header. Enter the text as HTML.")
     vote_start = models.DateField(help_text="Start date for voting, inclusive")
     vote_end = models.DateField(help_text="End date for voting, inclusive")
-    biographies_url = models.URLField(max_length=255, blank=True,
-        help_text="This is used to linkify candidate names on the voting "+\
-        "page. It must have named anchors for every candidate in the form "+\
-        "'FirstnameLastname' (no spaces).")
 
     def __unicode__(self):
         return unicode(self.name)
@@ -112,6 +108,9 @@ class Ballot(models.Model):
                      for c in cursor.fetchall()]
         return stats
 
+    def candidates_with_biographies(self):
+        return self.candidates.exclude(biography="")
+
     def has_incumbents(self):
         """
         Returns True if ballot has any candidates associated with it that
@@ -135,6 +134,10 @@ class Candidate(models.Model):
     incumbent = models.BooleanField()
     image_url = models.URLField(max_length=255, blank=True)
     write_in = models.BooleanField(default=False)
+    biography = models.TextField(blank=True,
+        help_text="Enter the candidate's biography here as HTML. It will "+\
+        "be shown when the user clicks the candidate's name. If you leave "+\
+        "this field blank, the candidate's name will not be a link.")
 
     def __unicode__(self):
         parenthesis = self.institution or (self.write_in and "write-in")

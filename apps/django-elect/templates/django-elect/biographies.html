@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{election}} Election{% endblock %}
+{% block content %}
+<h2>Biographies for {{election}} Election Candidates</h2>
+<br/>
+{% for ballot, candidates in ballot_candidates %}
+<div class="section">
+    <h3 class="heading">{{ballot.description}}</h3>
+    <div class="content">
+  {% if ballot.introduction_override %}
+      <p>{{ballot.introduction_override}}</p>
+  {% endif %}
+  {% for candidate in candidates %}
+      <a name="{{candidate.get_name|urlencode}}"></a>
+      <h4>{{candidate.get_name}}</h4>
+      <p>
+      {% if candidate.image_url %}
+        <img src="{{candidate.image_url}}" alt="Photograph" style="float: left;
+        padding: 5px"/>
+      {% endif %}
+        {{candidate.biography|safe}}
+      </p>
+  {% endfor %}
+    </div>
+</div>
+<hr/>
+{% endfor %}
+{% endblock %}
