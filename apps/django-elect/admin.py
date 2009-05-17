@@ -1,3 +1,5 @@
+from string import Template
+
 from django.contrib import admin
 from django.http import HttpResponseRedirect
 
@@ -10,9 +12,19 @@ class BallotInline(admin.StackedInline):
     extra = 3
 
 class ElectionAdmin(admin.ModelAdmin):
+    actions = Template(u"""
+        <a href="/election/statistics/$pk/">View Statistics</a> |
+        <a href="/election/spreadsheet/$pk/">Generate Excel Spreadsheet</a> |
+        <a href="/election/disassociate/$pk/">Disassociate Accounts</a>
+    """)
     change_form_template = "admin/election_change_form.html"
-    list_display = ('name', 'vote_start', 'vote_end')
+    list_display = ('name', 'vote_start', 'vote_end', 'admin_actions')
     inlines = [BallotInline]
+
+    def admin_actions(self, obj):
+        return self.actions.substitute(pk = obj.pk)
+    admin_actions.short_description = "Administrative Actions"
+    admin_actions.allow_tags = True
 
     def response_add(self, request, obj):
         # Overrides ModeAdmin.response_add() and redirects user to the ballot
@@ -23,7 +35,6 @@ class ElectionAdmin(admin.ModelAdmin):
         self.message_user(request, msg)
         url = "../../ballot/?election__id__exact=%i" % obj.pk
         return HttpResponseRedirect(url)
-
 admin.site.register(Election, ElectionAdmin)
 
 

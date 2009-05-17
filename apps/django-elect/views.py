@@ -22,20 +22,23 @@ def biographies(request):
 
 @staff_member_required
 @never_cache
-def statistics(request):
+def statistics(request, id):
+    """
+    Displays a table for each ballot with statistics for the candidates.
+    """
+    election = get_object_or_404(Election, pk=id)    
     return render_to_response('django-elect/statistics.html', {
         'title': "Election Statistics",
-        'election': Election.objects.latest(),
+        'election': election,
     })
 
 
 @staff_member_required
-def generate_spreadsheet(request):
+def generate_spreadsheet(request, id):
     """
     Generates an Excel spreadsheet for review by a staff member.
     """
-    election = Election.objects.latest()
-
+    election = get_object_or_404(Election, pk=id) 
     ballots = election.ballots.all()
     ballots = SortedDict([(b, b.candidates.all()) for b in ballots])
     # Flatten candidate list after converting QuerySets into lists
@@ -49,26 +52,20 @@ def generate_spreadsheet(request):
     filename = "election%s.xls" % (election.pk)
     response['Content-Disposition'] = 'attachment; filename='+filename
     response['Content-Type'] = 'application/vnd.ms-excel; charset=utf-8'
-
     return response
 
 
 @staff_member_required
-def disassociate_accounts(request, id=''):
+def disassociate_accounts(request, id):
     """
     Disassociates accounts (i.e. sets account_ids to NULL) for all Vote
     objects. 'id' corresponds to the primary key of the Election objects.
     """
+    election = get_object_or_404(Election, pk=id)
     success = False
-    if not id:
-        election = Election.objects.latest()
-    else:
-        election = get_object_or_404(Election, pk=id)
-
     if request.POST and "confirm" in request.POST:
         election.disassociate_accounts()
         success = True
-
     return render_to_response("django-elect/disassociate.html", {
         "title": "Disassociate Accounts for Election %s" % election,
         "election": election,
