@@ -34,7 +34,7 @@ class ShowErrorsNode(template.Node):
         #convert keys to human-readable form, e.g. "first_name" => "First Name"
         errors = map(lambda x: (str(x[0]).replace("_", " ").title(), 
                      x[1]), errors)
-        return render_to_string('django-elect/errors.html', {
+        return render_to_string('django_elect/errors.html', {
             'error_dict': errors,
             "id": error_id,
         })

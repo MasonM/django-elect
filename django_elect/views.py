@@ -14,7 +14,7 @@ def biographies(request):
     election = Election.get_latest_or_404()
     ballot_candidates = dict((b, b.candidates_with_biographies())
         for b in election.ballots.all() if b.candidates_with_biographies())
-    return render_to_response('django-elect/biographies.html', {
+    return render_to_response('django_elect/biographies.html', {
         'election': election,
         'ballot_candidates': ballot_candidates.items(),
     })
@@ -27,7 +27,7 @@ def statistics(request, id):
     Displays a table for each ballot with statistics for the candidates.
     """
     election = get_object_or_404(Election, pk=id)    
-    return render_to_response('django-elect/statistics.html', {
+    return render_to_response('django_elect/statistics.html', {
         'title': "Election Statistics",
         'election': election,
     })
@@ -45,7 +45,7 @@ def generate_spreadsheet(request, id):
     candidates = sum(map(list, ballots.values()), [])
     votes = [(v, v.get_points_for_candidates(candidates))
              for v in election.votes.all()]
-    response = render_to_response("django-elect/spreadsheet.html", {
+    response = render_to_response("django_elect/spreadsheet.html", {
         'ballots': ballots.items(),
         'votes': votes,
     })
@@ -66,7 +66,7 @@ def disassociate_accounts(request, id):
     if request.POST and "confirm" in request.POST:
         election.disassociate_accounts()
         success = True
-    return render_to_response("django-elect/disassociate.html", {
+    return render_to_response("django_elect/disassociate.html", {
         "title": "Disassociate Accounts for Election %s" % election,
         "election": election,
         "success": success,
@@ -104,7 +104,7 @@ def vote(request):
             # they must not have selected any candidates, so show an error
             none_selected  = True
 
-    return render_to_response('django-elect/vote.html', {
+    return render_to_response('django_elect/vote.html', {
         'current_tab': 'election',
         'account': request.user,
         'election': election,

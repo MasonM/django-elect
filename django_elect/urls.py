@@ -5,7 +5,7 @@ import views
 
 urlpatterns = patterns('django.views.generic.simple',
     (r'^success', 'direct_to_template', {
-        'template': 'django-elect/success.html'
+        'template': 'django_elect/success.html'
     }),
 ) + patterns('',
     url(r'^biographies', views.biographies),
