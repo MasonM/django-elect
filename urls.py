@@ -6,12 +6,12 @@ from django.contrib import admin
 
 
 admin.autodiscover()
-admin.site.index_template = "admin/admin_index.html"
+
 
 urlpatterns = patterns('',
     (r'^admin/(.*)', admin.site.root),
     (r'^admin_docs/', include('django.contrib.admindocs.urls')),
-    (r'^election/', include('election.apps.django-elect.urls')),
+    (r'^election/', include('election.django_elect.urls')),
     (r'^accounts/login/$', 'django.contrib.auth.views.login'),
 )
 

@@ -38,7 +38,7 @@ USE_I18N = True
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = WEB_ROOT + '/apps/django-elect/media/'
+MEDIA_ROOT = WEB_ROOT + '/django_elect/media/'
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
@@ -76,7 +76,7 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
-    'election.apps.django-elect',
+    'election.django_elect',
     'django.contrib.admin',
     'django.contrib.admindocs',
     'django.contrib.auth',
