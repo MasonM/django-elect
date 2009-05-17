@@ -4,7 +4,7 @@ from models import Election, Ballot, Vote, Candidate, \
     VotePreferential, VotePlurality
 
 
-class BallotInline(admin.TabularInline):
+class BallotInline(admin.StackedInline):
     model = Ballot
     extra = 2
 
@@ -14,7 +14,7 @@ class ElectionAdmin(admin.ModelAdmin):
 admin.site.register(Election, ElectionAdmin)
 
 
-class CandidateInline(admin.TabularInline):
+class CandidateInline(admin.StackedInline):
     model = Candidate
     extra = 5
 

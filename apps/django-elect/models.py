@@ -64,10 +64,13 @@ class Ballot(models.Model):
         ("Pr", "Preferential"),
     )
     election = models.ForeignKey(Election, related_name="ballots")
+    position_number = models.PositiveSmallIntegerField(default=1,
+        help_text="Change this if you want to customize the order in which "+\
+        "ballots are shown for an election.")    
     description = models.CharField(max_length=255, blank=True)
     introduction_override = models.TextField(blank=True,
-        help_text="If this field is non-empty, it will replace the default"+\
-        " text shown below the ballot header on the voting page. Enter the "+\
+        help_text="If this field is non-empty, it will replace the default "+\
+        "text shown below the ballot header on the voting page. Enter the "+\
         "text as HTML.")
     type = models.CharField(max_length=2, blank=False, choices=TYPES)
     seats_available = models.PositiveSmallIntegerField()
@@ -115,7 +118,7 @@ class Ballot(models.Model):
         return self.candidates.filter(incumbent=True).count() > 0
 
     class Meta:
-        ordering = ['election', 'type', 'description']
+        ordering = ['election', 'position_number', 'type', 'description']
 
 
 class Candidate(models.Model):
