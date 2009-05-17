@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
@@ -74,7 +75,7 @@ def vote(request):
     voting_allowed = election and election.voting_allowed()
     if not voting_allowed or election.has_voted(request.user):
         # they aren't supposed to be on this page
-        return HttpResponseRedirect('/account/')
+        return HttpResponseRedirect(settings.LOGIN_URL)
 
     forms = []
     notice = ""
