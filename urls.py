@@ -12,6 +12,7 @@ urlpatterns = patterns('',
     (r'^admin/(.*)', admin.site.root),
     (r'^admin_docs/', include('django.contrib.admindocs.urls')),
     (r'^election/', include('election.apps.django-elect.urls')),
+    (r'^accounts/login/$', 'django.contrib.auth.views.login'),
 )
 
 #allow static serve only for development work using the command
