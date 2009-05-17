@@ -1,10 +1,8 @@
-{% extends "base.html" %}
+{% extends "django-elect/base.html" %}
 {% load show_errors %}
 {% load show_notice %}
-{% block stylesheets %}
-<link rel="stylesheet" type="text/css" href="/media/css/main.css"/>
-{% endblock %}
-{% block javascript %}
+{% block title %}{{election}} Election - Vote{% endblock %}
+{% block extrahead %}
 <script type="text/javascript" src="/media/js/jquery-1.3.2.min.js"></script>
 <script type="text/javascript">
 $(function() {
@@ -15,7 +13,7 @@ $(function() {
 })
 </script>
 {% endblock %}
-{% block main %}
+{% block content %}
 <form method="POST" action="index.html">
   <h2>{{election}} Election</h2>
   <p>
