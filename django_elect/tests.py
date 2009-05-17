@@ -12,9 +12,11 @@ class ModelTestCase(unittest.TestCase):
 
     def setUp(self):
         self.suiseiseki = User.objects.create(email="desu@desu.de",
-            first_name="Jade", last_name="Stern", password="DESU")
+            username="desu", first_name="Jade", last_name="Stern",
+            password="DESU")
         self.shinku = User.objects.create(email="shinku@inbox.com",
-            first_name="Reiner", last_name="Rubin", password="DAWA")
+            username="shinku", first_name="Reiner", last_name="Rubin",
+            password="DAWA")
 
         week_ago = date.today() - timedelta(7)
         next_week = date.today() + timedelta(7)

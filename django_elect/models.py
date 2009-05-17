@@ -41,11 +41,14 @@ class Election(models.Model):
         from django.db import connection
         cursor = connection.cursor()
         query = """
-            UPDATE election_vote
+            UPDATE %(vote)s
             SET account_id = NULL
-            WHERE election_id = %i
+            WHERE election_id = %(id)i
         """
-        cursor.execute(query % self.pk)
+        cursor.execute(query % {
+            'vote': Vote._meta.db_table,
+            'id': self.pk,
+        })
         return cursor.rowcount
 
     @staticmethod
@@ -107,14 +110,19 @@ class Ballot(models.Model):
             cursor = connection.cursor()
             query = """
                 SELECT c.id, IF(v.point IS NULL, 0, SUM(v.point)) AS points
-                FROM election_ballot b
-                JOIN election_candidate c ON (c.ballot_id=b.id)
-                LEFT JOIN election_votepreferential v ON (v.candidate_id=c.id)
-                WHERE b.id = '%i'
+                FROM %(ballot)s b
+                JOIN %(candidate)s c ON (c.ballot_id=b.id)
+                LEFT JOIN %(vote_preferential)s v ON (v.candidate_id=c.id)
+                WHERE b.id = '%(id)i'
                 GROUP BY c.id
                 ORDER BY points DESC
             """
-            cursor.execute(query % self.id)
+            cursor.execute(query % {
+                'ballot': Ballot._meta.db_table,
+                'candidate': Candidate._meta.db_table,
+                'vote_preferential': VotePreferential._meta.db_table,
+                'id': self.pk,
+            })
             stats = [(Candidate.objects.get(id=c[0]), c[1])
                      for c in cursor.fetchall()]
         return stats
