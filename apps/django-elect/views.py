@@ -14,7 +14,7 @@ def biographies(request):
     election = Election.get_latest_or_404()
     ballot_candidates = dict((b, b.candidates_with_biographies())
         for b in election.ballots.all() if b.candidates_with_biographies())
-    return render_to_response('election/biographies.html', {
+    return render_to_response('django-elect/biographies.html', {
         'election': election,
         'ballot_candidates': ballot_candidates.items(),
     })
