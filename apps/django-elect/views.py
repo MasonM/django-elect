@@ -82,7 +82,7 @@ def vote(request):
         return HttpResponseRedirect(settings.LOGIN_URL)
 
     forms = []
-    notice = ""
+    none_selected = False
     data = request.POST or None
     # fill forms list with Form objects, one for each ballot
     for b in election.ballots.all():
@@ -102,12 +102,12 @@ def vote(request):
             return HttpResponseRedirect('/election/success')
         else:
             # they must not have selected any candidates, so show an error
-            notice = "Please select at least one candidate."
+            none_selected  = True
 
     return render_to_response('django-elect/vote.html', {
         'current_tab': 'election',
         'account': request.user,
         'election': election,
         'forms': forms,
-        'notice': notice,
+        'none_selected': none_selected,
     })
