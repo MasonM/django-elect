@@ -4,7 +4,9 @@ import views
 
 
 urlpatterns = patterns('django.views.generic.simple',
-    (r'^success', 'direct_to_template', {'template': 'success.html'}),
+    (r'^success', 'direct_to_template', {
+        'template': 'django-elect/success.html'
+    }),
 ) + patterns('',
     url(r'^statistics', views.statistics),
     url(r'^spreadsheet', views.generate_spreadsheet),

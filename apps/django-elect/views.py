@@ -13,7 +13,7 @@ from forms import PluralityVoteForm, PreferentialVoteForm
 @staff_member_required
 @never_cache
 def statistics(request):
-    return render_to_response('statistics.html', {
+    return render_to_response('django-elect/statistics.html', {
         'title': "Election Statistics",
         'election': Election.objects.latest(),
     })
@@ -32,7 +32,7 @@ def generate_spreadsheet(request):
     candidates = sum(map(list, ballots.values()), [])
     votes = [(v, v.get_points_for_candidates(candidates))
              for v in election.votes.all()]
-    response = render_to_response("spreadsheet.html", {
+    response = render_to_response("django-elect/spreadsheet.html", {
         'ballots': ballots.items(),
         'votes': votes,
     })
@@ -59,7 +59,7 @@ def disassociate_accounts(request, id=''):
         election.disassociate_accounts()
         success = True
 
-    return render_to_response("disassociate.html", {
+    return render_to_response("django-elect/disassociate.html", {
         "title": "Disassociate Accounts for Election %s" % election,
         "election": election,
         "success": success,
@@ -100,7 +100,7 @@ def vote(request):
             # they must not have selected any candidates, so show an error
             notice = "Please select at least one candidate."
 
-    return render_to_response('vote.html', {
+    return render_to_response('django-elect/vote.html', {
         'current_tab': 'election',
         'account': request.user,
         'election': election,
