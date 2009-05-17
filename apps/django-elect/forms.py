@@ -114,6 +114,9 @@ class WriteInField(forms.MultiValueField):
 
 
 class PluralityVoteForm(BaseVoteForm):
+    """
+    Extends BaseVoteForm to implement the vote form for plurality ballots.
+    """
     def __init__(self, *args, **kwargs):
         super(PluralityVoteForm, self).__init__(*args, **kwargs)
         candidates = self.ballot.candidates.filter(write_in=False)
@@ -171,11 +174,15 @@ class PluralityVoteForm(BaseVoteForm):
 
 
 class PreferentialVoteForm(BaseVoteForm):
+    """
+    Extends BaseVoteForm to implement the vote form for preferential ballots.
+    """
     def __init__(self, *args, **kwargs):
         super(PreferentialVoteForm, self).__init__(*args, **kwargs)
         candidates = self.ballot.candidates.filter(write_in=False)
-        # each candidate select box should have options in format
-        #[(0, 0), (1, 3), (2, 2), (3, 1)] so that the points are added up right
+        #we use the Borda count method for preferential ballots, so each
+        #candidate select box should have options in the format
+        #[(0, 0), (1, 3), (2, 2), (3, 1)]
         point_options = [(0, 0)]
         points = range(1, candidates.count() + 1)
         point_options += zip(points[::-1], points)
