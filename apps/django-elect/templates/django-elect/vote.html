@@ -2,16 +2,14 @@
 {% load show_errors %}
 {% load show_notice %}
 {% block javascript %}
-<script type="text/javascript" language="Javascript" src="/media/utils.js">
-</script>
+<script type="text/javascript" src="/media/jquery-1.3.2.min.js"></script>
 <script type="text/javascript">
-function focusError() {
+$(function() {
     //jump to first error message on page load, if any
     if(document.getElementById("error0")) {
         window.location.hash = "error0";
     }
-}
-addEvent(window, "load", focusError);
+})
 </script>
 {% endblock %}
 {% block main %}
