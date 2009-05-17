@@ -46,9 +46,6 @@ $(function() {
       {% if form.ballot.has_incumbents %}
         An asterisk before a name indicates an incumbent.
       {% endif %}
-      {% if notice %}
-         {% show_notice notice %}
-      {% endif %}
       {% if form.errors %}
         {% show_errors form %}
       {% endif %}
