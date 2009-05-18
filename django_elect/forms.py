@@ -13,13 +13,11 @@ class CandidateRowWidget(forms.Select):
     Form widget for showing a table row with information on a single candidate.
     """
     template = Template(u"""
-      <tr height="230" valign="middle">
-        <td width="10">$select</td>
-        <td width="130">$incum$name</td>
-        <td width="200">$inst</td>
-        <td width="150">
-            <img src="$image" alt="Photograph"/>
-        </td>
+      <tr class="candidate-row">
+        <td>$select</td>
+        <td>$incum$name</td>
+        <td>$inst</td>
+        <td><img src="$image" alt="Photograph"/></td>
       </tr>
     """)
 

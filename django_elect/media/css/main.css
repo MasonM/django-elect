@@ -6,21 +6,34 @@ a img {
   border: 0;
 }
 
-div#main {
+div#content {
   border-top: solid thin gray;
 }
 
-.nomarker li {
-  list-style-type: none !important;
-} 
-
-.clearer {
-  clear: both;
+.candidate-row {
+  height: 230px;
+  vertical-align: middle;
 }
 
-.small-message {
-  font-style: italic;
-  font-size: 10px;
+.ballot {
+  margin: 0;
+  width: 490px;
+}
+
+.ballot-col-select {
+  width: 10px;
+}
+
+.ballot-col-name {
+  width: 130px;
+}
+
+.ballot-col-institution {
+  width: 200px;
+}
+
+.ballot-col-image {
+  width: 150px;
 }
 
 /* styles for error message */
