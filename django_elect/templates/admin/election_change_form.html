@@ -2,6 +2,7 @@
 {% load i18n admin_modify adminmedia %}
 {% block extrahead %}
 {{block.super}}
+{% if add %}
 <script type="text/javascript">
 $(function() {
     //Set the position numbers for the ballots to be ascending order
@@ -11,6 +12,7 @@ $(function() {
     }
 })
 </script>
+{% endif %}
 {% endblock %}
 {% block content %}<div id="content-main">
 <form action="{{ form_url }}" method="post" id="election_form">
