@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <title>{% block title %}{% endblock %}</title>
-        <link rel="stylesheet" type="text/css" href="/media/css/main.css"/>
+        <link rel="stylesheet" type="text/css"
+              href="{{DJANGO_ELECT_MEDIA_ROOT}}/css/main.css"/>
         {% block extrahead %}{% endblock %}
     </head>
     <body>

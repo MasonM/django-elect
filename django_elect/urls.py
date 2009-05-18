@@ -1,11 +1,15 @@
 from django.conf.urls.defaults import patterns, url
 
 import views
+import settings
 
 
 urlpatterns = patterns('django.views.generic.simple',
     (r'^success', 'direct_to_template', {
-        'template': 'django_elect/success.html'
+        'template': 'django_elect/success.html',
+        'extra_context': {
+            'DJANGO_ELECT_MEDIA_ROOT': settings.DJANGO_ELECT_MEDIA_ROOT,
+        },
     }),
 ) + patterns('',
     url(r'^biographies', views.biographies),

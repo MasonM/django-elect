@@ -5,6 +5,7 @@ from django.utils.http import urlquote
 from django.utils.safestring import mark_safe
 
 from models import Candidate, VotePlurality, VotePreferential
+import settings
 
 
 class CandidateRowWidget(forms.Select):
@@ -39,12 +40,14 @@ class CandidateRowWidget(forms.Select):
             link = "/election/biographies/#" + urlquote(candidate_name)
             candidate_name = '<a href="%s">%s</a>' % (link, candidate_name)
         select = self.form_widget.render(name, value)
+        photo_unavailable = settings.DJANGO_ELECT_MEDIA_ROOT + \
+                            "/img/photo_unavailable.gif"
         return mark_safe(self.template.substitute({
             'select': select,
             'incum': self.candidate.incumbent and "*" or "",
             'name': candidate_name,
             'inst': self.candidate.institution or "N/A",
-            'image': self.candidate.image_url or "/media/photo_unavailable.gif"
+            'image': self.candidate.image_url or photo_unavailable,
         }))
 
 
