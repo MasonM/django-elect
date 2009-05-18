@@ -162,7 +162,7 @@ class PluralityVoteForm(BaseVoteForm):
         self.candidate_list = Candidate.objects.in_bulk(candidates).values()
         seats = self.ballot.seats_available
         write_in = clean.get('write_in')
-        if (len(self.candidate_list) + (1 if write_in else 0)) > seats:
+        if (len(self.candidate_list) + (write_in and 1 or 0)) > seats:
             message = 'Please select %i or fewer candidates.' % (seats)
             raise forms.ValidationError(message)
 

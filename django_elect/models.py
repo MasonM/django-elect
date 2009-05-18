@@ -218,10 +218,10 @@ class Vote(models.Model):
         for candidate in candidates:
             if candidate.ballot.type == "Pr":
                 vote = self.preferentials.filter(candidate=candidate)
-                point_list.append(vote[0].point if vote else 0)
+                point_list.append(vote and vote[0].point or 0)
             elif candidate.ballot.type == "Pl":
                 has_voted = self.pluralities.filter(candidate=candidate)
-                point_list.append(1 if has_voted else 0)
+                point_list.append(has_voted and 1 or 0)
         return point_list
 
 
