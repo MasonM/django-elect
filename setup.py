@@ -4,8 +4,7 @@ from setuptools import setup, find_packages
 
 setup(name='django-elect',
     version='0.1',
-    description='A simple voting app for Django, mainly intended for '+\
-                'academic organizations.',
+    description='A simple voting app for Django',
     license='BSD',
     author='Mason Malone',
     author_email='mason.malone@gmail.com',
