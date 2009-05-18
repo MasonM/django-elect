@@ -12,8 +12,8 @@ class Election(models.Model):
     Voting only allowed between vote_start and vote_end dates.
     """
     name = models.CharField(max_length=255, blank=False, unique=True,
-        help_text="The name field is used to identify elections and must be "+\
-        "unique. It will be shown to users." )
+        help_text="Used to uniquely identify elections. Will be shown "+\
+        "with ' Election' appended to it on all publicly-visible pages.")
     introduction = models.TextField(blank=True,
         help_text="This is printed at the top of the voting page below "+\
         "the header. Enter the text as HTML.")
@@ -87,6 +87,9 @@ class Ballot(models.Model):
     type = models.CharField(max_length=2, blank=False, choices=TYPES,
         default="Pl")
     seats_available = models.PositiveSmallIntegerField()
+    is_secret = models.BooleanField(default=False,
+        help_text="Check this for a secret ballot. This means that only the "+\
+        "fact that a voter voted will be recorded, not his or her choices.")
     write_in_available = models.BooleanField(default=True)
 
     def __unicode__(self):
