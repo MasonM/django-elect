@@ -84,7 +84,8 @@ class Ballot(models.Model):
     introduction = models.TextField(blank=True,
         help_text="If this field is non-empty, it will be shown elow the "+\
         "ballot header on the voting page. Enter the text as HTML.")
-    type = models.CharField(max_length=2, blank=False, choices=TYPES)
+    type = models.CharField(max_length=2, blank=False, choices=TYPES,
+        default="Pl")
     seats_available = models.PositiveSmallIntegerField()
     write_in_available = models.BooleanField(default=True)
 

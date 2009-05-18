@@ -1,6 +1,17 @@
 {% extends "admin/change_form.html" %}
 {% load i18n admin_modify adminmedia %}
-
+{% block extrahead %}
+{{block.super}}
+<script type="text/javascript">
+$(function() {
+    //Set the position numbers for the ballots to be ascending order
+    var num_ballots = $("#id_ballots-TOTAL_FORMS").val()
+    for(i = 0; i < num_ballots; i++) {
+        $("#id_ballots-"+i+"-position_number").val(i+1);
+    }
+})
+</script>
+{% endblock %}
 {% block content %}<div id="content-main">
 <form action="{{ form_url }}" method="post" id="election_form">
 <div>
