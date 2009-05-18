@@ -5,9 +5,9 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
 from django.utils.datastructures import SortedDict
 
-from models import Election, Vote
-from forms import PluralityVoteForm, PreferentialVoteForm
-import settings
+from django_elect.models import Election, Vote
+from django_elect.forms import PluralityVoteForm, PreferentialVoteForm
+from django_elect import settings
 
 
 def biographies(request):

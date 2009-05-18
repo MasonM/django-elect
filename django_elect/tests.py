@@ -3,8 +3,8 @@ from datetime import date, timedelta
 
 from django.contrib.auth.models import User
 
-from models import Ballot, Candidate, Election, Vote, VotePlurality,\
-    VotePreferential
+from django_elect.models import Ballot, Candidate, Election, Vote, \
+    VotePlurality, VotePreferential
 
 
 class ModelTestCase(unittest.TestCase):

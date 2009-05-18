@@ -3,9 +3,9 @@ from string import Template
 from django.contrib import admin
 from django.http import HttpResponseRedirect
 
-from models import Election, Ballot, Vote, Candidate, \
+from django_elect.models import Election, Ballot, Vote, Candidate, \
     VotePreferential, VotePlurality
-import settings
+from django_elect import settings
 
 
 class BallotInline(admin.StackedInline):

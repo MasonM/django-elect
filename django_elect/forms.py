@@ -4,8 +4,8 @@ from django import forms
 from django.utils.http import urlquote
 from django.utils.safestring import mark_safe
 
-from models import Candidate, VotePlurality, VotePreferential
-import settings
+from django_elect.models import Candidate, VotePlurality, VotePreferential
+from django_elect import settings
 
 
 class CandidateRowWidget(forms.Select):
