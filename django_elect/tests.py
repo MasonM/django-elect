@@ -1,23 +1,17 @@
-import unittest
 from datetime import date, timedelta
 
+from django.test import TestCase
 from django.contrib.auth.models import User
 
 from django_elect.models import Ballot, Candidate, Election, Vote, \
     VotePlurality, VotePreferential
 
 
-class ModelTestCase(unittest.TestCase):
+class ModelTestCase(TestCase):
     "Tests for the election models"
+    fixtures = ['testdata.json']
 
     def setUp(self):
-        self.suiseiseki = User.objects.create(email="desu@desu.de",
-            username="desu", first_name="Jade", last_name="Stern",
-            password="DESU")
-        self.shinku = User.objects.create(email="shinku@inbox.com",
-            username="shinku", first_name="Reiner", last_name="Rubin",
-            password="DAWA")
-
         week_ago = date.today() - timedelta(7)
         next_week = date.today() + timedelta(7)
         tomorrow = date.today() + timedelta(1)
@@ -30,13 +24,14 @@ class ModelTestCase(unittest.TestCase):
             vote_start=tomorrow, vote_end=next_week)
 
     def tearDown(self):
-        self.suiseiseki.delete()
-        self.shinku.delete()
         self.election_current.delete()
         self.election_finished.delete()
         self.election_future.delete()
 
     def test_election_model(self):
+        suiseiseki = User.objects.get(username="desu")
+        shinku = User.objects.get(username="shinku")
+
         # test __unicode__ and voting_allowed() methods
         self.assertEqual(unicode(self.election_current), u"current")
         self.assertTrue(self.election_current.voting_allowed())
@@ -48,27 +43,30 @@ class ModelTestCase(unittest.TestCase):
         self.assertFalse(self.election_future.voting_allowed())
 
         # test has_voted() method
-        self.assertFalse(self.election_current.has_voted(self.suiseiseki))
-        Vote.objects.create(account=self.suiseiseki,
+        self.assertFalse(self.election_current.has_voted(suiseiseki))
+        Vote.objects.create(account=suiseiseki,
             election=self.election_current)
-        self.assertTrue(self.election_current.has_voted(self.suiseiseki))
-        self.assertFalse(self.election_finished.has_voted(self.suiseiseki))
-        self.assertFalse(self.election_current.has_voted(self.shinku))
-        Vote.objects.create(account=self.shinku, election=self.election_future)
-        self.assertTrue(self.election_future.has_voted(self.shinku))
-        self.assertFalse(self.election_future.has_voted(self.suiseiseki))
-        Vote.objects.create(account=self.suiseiseki,
+        self.assertTrue(self.election_current.has_voted(suiseiseki))
+        self.assertFalse(self.election_finished.has_voted(suiseiseki))
+        self.assertFalse(self.election_current.has_voted(shinku))
+        Vote.objects.create(account=shinku, election=self.election_future)
+        self.assertTrue(self.election_future.has_voted(shinku))
+        self.assertFalse(self.election_future.has_voted(suiseiseki))
+        Vote.objects.create(account=suiseiseki,
             election=self.election_future)
-        self.assertTrue(self.election_future.has_voted(self.suiseiseki))
+        self.assertTrue(self.election_future.has_voted(suiseiseki))
 
         # test disassociate_accounts() method
         self.assertEqual(self.election_future.votes.count(), 2)
         self.election_future.disassociate_accounts()
         self.assertEqual(self.election_future.votes.count(), 2)
-        self.assertFalse(self.election_future.has_voted(self.suiseiseki))
-        self.assertFalse(self.election_future.has_voted(self.shinku))
+        self.assertFalse(self.election_future.has_voted(suiseiseki))
+        self.assertFalse(self.election_future.has_voted(shinku))
 
     def test_ballot_model(self):
+        suiseiseki = User.objects.get(username="desu")
+        shinku = User.objects.get(username="shinku")
+
         # test __unicode__ and has_incumbents()
         ballot_plurality = Ballot.objects.create(description="Best Doll",
             election=self.election_current, type="Pl", seats_available=6)
@@ -90,7 +88,7 @@ class ModelTestCase(unittest.TestCase):
         # test get_candidate_stats() with a plurality ballot
         self.assertEqual(ballot_plurality.get_candidate_stats(),
             [(pl_candidate1, 0)])
-        temp_vote1 = Vote.objects.create(account=self.suiseiseki,
+        temp_vote1 = Vote.objects.create(account=suiseiseki,
             election=self.election_current)
         VotePlurality.objects.create(vote=temp_vote1, candidate=pl_candidate1)
         self.assertEqual(ballot_plurality.get_candidate_stats(),
@@ -99,7 +97,7 @@ class ModelTestCase(unittest.TestCase):
             first_name="Reiner", last_name="Rubin", incumbent=False)
         self.assertEqual(ballot_plurality.get_candidate_stats(),
             [(pl_candidate1, 1), (pl_candidate2, 0)])
-        temp_vote2 = Vote.objects.create(account=self.shinku,
+        temp_vote2 = Vote.objects.create(account=shinku,
             election=self.election_current)
         VotePlurality.objects.create(vote=temp_vote2, candidate=pl_candidate1)
         self.assertEqual(ballot_plurality.get_candidate_stats(),
@@ -108,7 +106,7 @@ class ModelTestCase(unittest.TestCase):
         # test get_candidate_stats with a preferential ballot
         self.assertEqual(ballot_preferential.get_candidate_stats(),
             [(pr_candidate1, 0)])
-        temp_vote1 = Vote.objects.create(account=self.suiseiseki,
+        temp_vote1 = Vote.objects.create(account=suiseiseki,
             election=self.election_current)
         VotePreferential.objects.create(vote=temp_vote1, point=2,
             candidate=pr_candidate1)
@@ -118,7 +116,7 @@ class ModelTestCase(unittest.TestCase):
             first_name="Reiner", last_name="Rubin", incumbent=False)
         self.assertEqual(ballot_preferential.get_candidate_stats(),
             [(pr_candidate1, 2), (pr_candidate2, 0)])
-        temp_vote2 = Vote.objects.create(account=self.shinku,
+        temp_vote2 = Vote.objects.create(account=shinku,
             election=self.election_current)
         VotePreferential.objects.create(vote=temp_vote2, point=1,
             candidate=pr_candidate1)
@@ -148,7 +146,7 @@ class ModelTestCase(unittest.TestCase):
             first_name="Jade", last_name="Stern", incumbent=True)
 
         temp_vote1 = Vote.objects.create(election=self.election_current,
-            account=self.suiseiseki)
+            account=User.objects.get(username="desu"))
         self.assertEqual(repr(temp_vote1.get_details()), repr(
             [(ballot_plurality, [])]))
         ballot_preferential = Ballot.objects.create(description="DESU",

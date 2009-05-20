@@ -1,3 +1,4 @@
 include LICENSE
 recursive-include django_elect/templates *
 recursive-include django_elect/media *
+recursive-include django_elect/fixtures *

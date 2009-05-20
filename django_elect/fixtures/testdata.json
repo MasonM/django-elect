@@ -1,0 +1,35 @@
+[{
+    "pk": 1,
+    "model": "auth.user",
+    "fields": {
+        "username": "desu",
+        "first_name": "Jade",
+        "last_name": "Stern",
+        "is_active": 1,
+        "is_superuser": 0,
+        "is_staff": 0,
+        "last_login": "2009-05-16 23:33:37",
+        "groups": [],
+        "user_permissions": [],
+        "password": "sha1$5c16e$1b7ed6f105feff2317c6d1e3ca16b65d21e7aa07",
+        "email": "desu@desu.de",
+        "date_joined": "2009-04-21 18:53:09"
+    }
+}, {
+    "pk": 2,
+    "model": "auth.user",
+    "fields": {
+        "username": "shinku",
+        "first_name": "Reiner",
+        "last_name": "Rubin",
+        "is_active": 1,
+        "is_superuser": 0,
+        "is_staff": 0,
+        "last_login": "2009-05-16 23:33:37",
+        "groups": [],
+        "user_permissions": [],
+        "password": "sha1$5c16e$34c6e799a209a063cf2c2e0d82e9b0dd5e23ef5f",
+        "email": "shinku@inbox.com",
+        "date_joined": "2009-04-21 18:53:09"
+    }
+}]
