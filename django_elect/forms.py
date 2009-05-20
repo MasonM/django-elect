@@ -69,7 +69,7 @@ class BaseVoteForm(forms.Form):
     def save(self, vote):
         """
         Only applicable to non-secret ballots. Must be implemented by
-        sub-classes to create appropriate objects for each candidate choice, 
+        sub-classes to create appropriate objects for each candidate choice,
         each of which should be associated with the given vote object.
         """
         if self.ballot.is_secret:

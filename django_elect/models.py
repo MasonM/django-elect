@@ -79,7 +79,7 @@ class Ballot(models.Model):
     election = models.ForeignKey(Election, related_name="ballots")
     position_number = models.PositiveSmallIntegerField(default=1,
         help_text="Change this if you want to customize the order in which "+\
-        "ballots are shown for an election.")    
+        "ballots are shown for an election.")
     description = models.CharField(max_length=255, blank=True)
     introduction = models.TextField(blank=True,
         help_text="If this field is non-empty, it will be shown elow the "+\

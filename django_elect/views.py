@@ -10,7 +10,7 @@ from django_elect.forms import PluralityVoteForm, PreferentialVoteForm
 from django_elect import settings
 
 
-# python 2.4 compatibility 
+# python 2.4 compatibility
 def all(iterable):
     for element in iterable:
         if not element:
@@ -42,7 +42,7 @@ def statistics(request, id):
     """
     Displays a table for each ballot with statistics for the candidates.
     """
-    election = get_object_or_404(Election, pk=id)    
+    election = get_object_or_404(Election, pk=id)
     return render_to_response('django_elect/statistics.html', {
         'DJANGO_ELECT_MEDIA_ROOT': settings.DJANGO_ELECT_MEDIA_ROOT,
         'title': "Election Statistics",
@@ -55,7 +55,7 @@ def generate_spreadsheet(request, id):
     """
     Generates an Excel spreadsheet for review by a staff member.
     """
-    election = get_object_or_404(Election, pk=id) 
+    election = get_object_or_404(Election, pk=id)
     ballots = election.ballots.all()
     ballots = SortedDict([(b, b.candidates.all()) for b in ballots])
     # Flatten candidate list after converting QuerySets into lists
@@ -120,7 +120,7 @@ def vote(request):
             return HttpResponseRedirect('/election/success')
         else:
             # they must not have selected any candidates, so show an error
-            none_selected  = True
+            none_selected = True
 
     return render_to_response('django_elect/vote.html', {
         'DJANGO_ELECT_MEDIA_ROOT': settings.DJANGO_ELECT_MEDIA_ROOT,
