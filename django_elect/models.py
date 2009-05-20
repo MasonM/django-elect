@@ -82,7 +82,7 @@ class Ballot(models.Model):
         "ballots are shown for an election.")
     description = models.CharField(max_length=255, blank=True)
     introduction = models.TextField(blank=True,
-        help_text="If this field is non-empty, it will be shown elow the "+\
+        help_text="If this field is non-empty, it will be shown below the "+\
         "ballot header on the voting page. Enter the text as HTML.")
     type = models.CharField(max_length=2, blank=False, choices=TYPES,
         default="Pl")
@@ -225,12 +225,12 @@ class Vote(models.Model):
         return point_list
 
 
-def _get_choices(type):
+def _get_choices(ballot_type):
     """
     Returns Q object that matches a ballot of the specified type that's
     currently active, i.e. today is between the vote_start and vote_end dates
     """
-    return Q(ballot__type=type) &\
+    return Q(ballot__type=ballot_type) &\
            Q(ballot__election__vote_start__lte=date.today()) &\
            Q(ballot__election__vote_end__gte=date.today())
 

@@ -68,12 +68,19 @@ class BaseVoteForm(forms.Form):
 
     def save(self, vote):
         """
+        Associates choices with given Vote object, unless the associated ballot
+        is secret.
+        """
+        if self.ballot.is_secret:
+            return
+        return self._do_save(vote)
+
+    def _do_save(self, vote):
+        """
         Only applicable to non-secret ballots. Must be implemented by
         sub-classes to create appropriate objects for each candidate choice,
         each of which should be associated with the given vote object.
         """
-        if self.ballot.is_secret:
-            return
         raise NotImplementedError
 
     def get_write_in_candidate(self, write_in):
@@ -170,7 +177,7 @@ class PluralityVoteForm(BaseVoteForm):
             self.candidate_list.append(self.get_write_in_candidate(write_in))
         return clean
 
-    def save(self, vote):
+    def _do_save(self, vote):
         for candidate in self.candidate_list:
             VotePlurality(vote=vote, candidate=candidate).save()
 
@@ -223,7 +230,7 @@ class PreferentialVoteForm(BaseVoteForm):
             self.candidate_list.append((candidate, write_in['points']))
         return clean
 
-    def save(self, vote):
+    def _do_save(self, vote):
         for candidate, points in self.candidate_list:
             VotePreferential(vote=vote, candidate=candidate,
                              point=points).save()
