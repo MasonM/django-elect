@@ -10,6 +10,21 @@ from django_elect.forms import PluralityVoteForm, PreferentialVoteForm
 from django_elect import settings
 
 
+# python 2.4 compatibility 
+def all(iterable):
+    for element in iterable:
+        if not element:
+            return False
+    return True
+
+
+def any(iterable):
+    for element in iterable:
+        if element:
+            return True
+    return False
+
+
 def biographies(request):
     election = Election.get_latest_or_404()
     ballot_candidates = dict((b, b.candidates_with_biographies())
