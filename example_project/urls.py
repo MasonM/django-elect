@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import patterns, include
+from django.conf.urls.defaults import *
 from django.conf import settings
 from django.contrib import admin
 
@@ -10,7 +10,9 @@ urlpatterns = patterns('',
     (r'^admin/(.*)', admin.site.root),
     (r'^admin_docs/', include('django.contrib.admindocs.urls')),
     (r'^election/', include('django_elect.urls')),
-    (r'^accounts/login/$', 'django.contrib.auth.views.login'),
+    (r'^accounts/login/', 'django.contrib.auth.views.login', {
+        'template_name': 'admin/login.html'
+    }),
 )
 
 #allow static serve only for development work 
