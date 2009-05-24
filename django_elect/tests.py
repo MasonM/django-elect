@@ -3,8 +3,16 @@ from datetime import date, timedelta
 from django.test import TestCase
 from django.contrib.auth.models import User
 
+from django_elect import settings
 from django_elect.models import Ballot, Candidate, Election, Vote, \
     VotePlurality, VotePreferential
+
+
+# some useful constants
+week_ago = date.today() - timedelta(7)
+next_week = date.today() + timedelta(7)
+tomorrow = date.today() + timedelta(1)
+yesterday = date.today() - timedelta(1)
 
 
 class ModelTestCase(TestCase):
@@ -12,10 +20,6 @@ class ModelTestCase(TestCase):
     fixtures = ['testdata.json']
 
     def setUp(self):
-        week_ago = date.today() - timedelta(7)
-        next_week = date.today() + timedelta(7)
-        tomorrow = date.today() + timedelta(1)
-        yesterday = date.today() - timedelta(1)
         self.election_current = Election.objects.create(name="current",
             introduction="Intro1", vote_start=week_ago, vote_end=tomorrow)
         self.election_finished = Election.objects.create(name="finished",
@@ -178,3 +182,70 @@ class ModelTestCase(TestCase):
         cand_list = [pr_candidate2, pr_candidate1]
         self.assertEqual(temp_vote1.get_points_for_candidates(cand_list),
             [3, 2])
+
+class VoteTestCase(TestCase):
+    """
+    Tests for the vote() view
+    """
+    fixtures = ['testdata.json']
+
+    def test_when_voting_unallowed(self):
+        # should get redirected when not logged in
+        response = self.client.get("/election/")
+        self.assertRedirects(response, settings.LOGIN_URL+"?next=/election/")
+
+        # should get a 404 if no election exists
+        self.client.login(username="desu", password="desu")
+        response = self.client.get("/election/")
+        self.assertEqual(response.status_code, 404)
+
+        # should get redirected if election exists but not active
+        past_election = Election.objects.create(name="finished",
+            vote_start=week_ago, vote_end=yesterday)
+        response = self.client.get("/election/")
+        self.assertRedirects(response, settings.LOGIN_URL)
+
+        future_election = Election.objects.create(name="future",
+            vote_start=tomorrow, vote_end=next_week)
+        response = self.client.get("/election/")
+        self.assertRedirects(response, settings.LOGIN_URL)
+
+        self.client.logout()
+        past_election.delete()
+        future_election.delete()
+
+    def test_with_plurality(self):
+        election = Election.objects.create(name="current",
+            introduction="Intro1", vote_start=week_ago, vote_end=tomorrow)
+        ballot1 = Ballot.objects.create(election=election,
+            type="Pl", seats_available=2, is_secret=True,
+            write_in_available=True, introduction="something something")
+        candidates_1 = [
+            Candidate.objects.create(ballot=ballot1,
+                first_name="Ballot 1", last_name="Candidate %i" % i)
+            for i in range(1, 6)
+        ]
+        ballot2 = Ballot.objects.create(election=election,
+            type="Pl", seats_available=4, is_secret=False,
+            write_in_available=False)
+        candidates_2 = [
+            Candidate.objects.create(ballot=ballot1,
+                first_name="Ballot 2", last_name="Candidate %i" % i)
+            for i in range(1, 8)
+        ]
+        self.client.login(username="desu", password="desu")
+        response = self.client.get("/election/")
+        # vote page should have ballot introduction and the names for 
+        # all candidates
+        self.assertContains(response, "something something")
+        for c in candidates_1 + candidates_2:
+            self.assertContains(response, c.get_name())
+        # first ballot should have write-in field, second shouldn't
+        self.assertContains(response, 'id="id_ballot1-write_in_1"')
+        self.assertNotContains(response, 'id="id_ballot2-write_in_1"')
+        # shouldn't be allowed to submit a vote without selecting a candidate
+        response = self.client.post("/election/")
+        self.assertEqual(response.status_code, 200)
+
+        self.client.logout()
+        election.delete()
