@@ -111,7 +111,7 @@ def vote(request):
             form = PreferentialVoteForm(b, data=data, prefix=prefix)
         forms.append(form)
 
-    if "vote" in request.POST and all(x.is_valid() for x in forms):
+    if request.POST and all(x.is_valid() for x in forms):
         #all forms valid, so save unless no candidates were selected
         if any(f.has_candidates() for f in forms):
             vote = Vote.objects.create(account=request.user, election=election)
