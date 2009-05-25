@@ -253,7 +253,7 @@ class VotePlurality(models.Model):
     """
     Vote for a candidate on a plurality ballot (i.e. Ballot.type="Pl")
     """
-    vote = models.ForeignKey(Vote, related_name="pluralities")
+    vote = models.ForeignKey(Vote, related_name="pluralities", null=True)
     candidate = models.ForeignKey(Candidate,
         limit_choices_to=_get_choices("Pl"))
 
