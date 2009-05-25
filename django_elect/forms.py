@@ -69,7 +69,7 @@ class BaseVoteForm(forms.Form):
     def save(self, vote):
         """
         Creates appropriate objects for each candidate choice and associates
-        them with the given Vote object, unless the associated ballot 
+        them with the given Vote object, unless the associated ballot
         is secret.
         """
         if self.ballot.is_secret:
