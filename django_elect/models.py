@@ -239,7 +239,7 @@ class VotePreferential(models.Model):
     """
     Vote for a candidate on a preferential ballot (i.e. Ballot.type="Pr")
     """
-    vote = models.ForeignKey(Vote, related_name="preferentials")
+    vote = models.ForeignKey(Vote, related_name="preferentials", null=True)
     candidate = models.ForeignKey(Candidate,
         limit_choices_to=_get_choices("Pr"))
     point = models.PositiveSmallIntegerField()
