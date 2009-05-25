@@ -68,18 +68,18 @@ class BaseVoteForm(forms.Form):
 
     def save(self, vote):
         """
-        Associates choices with given Vote object, unless the associated ballot
+        Creates appropriate objects for each candidate choice and associates
+        them with the given Vote object, unless the associated ballot 
         is secret.
         """
         if self.ballot.is_secret:
-            return
+            vote = None
         return self._do_save(vote)
 
     def _do_save(self, vote):
         """
         Only applicable to non-secret ballots. Must be implemented by
-        sub-classes to create appropriate objects for each candidate choice,
-        each of which should be associated with the given vote object.
+        sub-classes to do the actual saving.
         """
         raise NotImplementedError
 
