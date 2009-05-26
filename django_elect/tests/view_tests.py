@@ -12,6 +12,7 @@ class VoteTestCase(TestCase):
     Tests for the vote() view that don't depend on ballots
     """
     fixtures = ['testdata.json']
+    urls = 'django_elect.tests.urls'
 
     def test_when_voting_unallowed(self):
         # should get redirected when not logged in
@@ -44,6 +45,7 @@ class BaseBallotVoteTestCase(TestCase):
     Base class for testing the vote() view using specific ballots
     """
     fixtures = ['testdata.json']
+    urls = 'django_elect.tests.urls'
 
     def run(self, result=None):
         if not hasattr(self, "ballot_type"):
