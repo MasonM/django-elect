@@ -1,8 +1,8 @@
-from datetime import date, timedelta
+from datetime import datetime, timedelta
 
 
 # some useful constants
-week_ago = date.today() - timedelta(7)
-next_week = date.today() + timedelta(7)
-tomorrow = date.today() + timedelta(1)
-yesterday = date.today() - timedelta(1)
+week_ago = datetime.now() - timedelta(7)
+next_week = datetime.now() + timedelta(7)
+tomorrow = datetime.now() + timedelta(1)
+yesterday = datetime.now() - timedelta(1)

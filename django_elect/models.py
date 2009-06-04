@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime
 
 from django.http import Http404
 from django.db import models
@@ -17,17 +17,17 @@ class Election(models.Model):
     introduction = models.TextField(blank=True,
         help_text="This is printed at the top of the voting page below "+\
         "the header. Enter the text as HTML.")
-    vote_start = models.DateField(help_text="Start date for voting, inclusive")
-    vote_end = models.DateField(help_text="End date for voting, inclusive")
+    vote_start = models.DateTimeField(help_text="Start of voting")
+    vote_end = models.DateTimeField(help_text="End of voting")
 
     def __unicode__(self):
         return unicode(self.name)
 
     def voting_allowed(self):
         """
-        Returns True if if today is between vote_start and vote_end, inclusive.
+        Returns True if now is between vote_start and vote_end, inclusive.
         """
-        return self.vote_start <= date.today() <= self.vote_end
+        return self.vote_start <= datetime.now() <= self.vote_end
 
     def has_voted(self, account):
         """ Returns True if given account has voted for this election """
@@ -183,8 +183,8 @@ class Vote(models.Model):
     """
     account = models.ForeignKey(User, null=True)
     election = models.ForeignKey(Election, related_name="votes",
-        limit_choices_to=Q(vote_start__lte=date.today()) &\
-                         Q(vote_end__gte=date.today()))
+        limit_choices_to=Q(vote_start__lte=datetime.now()) &\
+                         Q(vote_end__gte=datetime.now()))
 
     def __unicode__(self):
         return unicode(self.account) + " - " + unicode(self.election)
@@ -228,11 +228,11 @@ class Vote(models.Model):
 def _get_choices(ballot_type):
     """
     Returns Q object that matches a ballot of the specified type that's
-    currently active, i.e. today is between the vote_start and vote_end dates
+    currently active, i.e. now() is between the vote_start and vote_end dates
     """
     return Q(ballot__type=ballot_type) &\
-           Q(ballot__election__vote_start__lte=date.today()) &\
-           Q(ballot__election__vote_end__gte=date.today())
+           Q(ballot__election__vote_start__lte=datetime.now()) &\
+           Q(ballot__election__vote_end__gte=datetime.now())
 
 
 class VotePreferential(models.Model):
