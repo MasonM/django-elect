@@ -20,7 +20,7 @@ class VoteTestCase(TestCase):
         self.assertRedirects(response, settings.LOGIN_URL+"?next=/election/")
 
         # should get a 404 if no election exists
-        self.client.login(username="desu", password="desu")
+        self.client.login(username="user1", password="desu")
         response = self.client.get("/election/")
         self.assertEqual(response.status_code, 404)
 
@@ -58,7 +58,7 @@ class BaseBallotVoteTestCase(TestCase):
         First ballot is secret and has 2 seats available w/ 4 candidates.
         Second isn't secret and has 4 seats available w/ 6 candidate.
         """
-        self.client.login(username="desu", password="desu")
+        self.client.login(username="user1", password="desu")
         self.election = Election.objects.create(name="current",
             introduction="Intro1", vote_start=week_ago, vote_end=tomorrow)
         ballot1 = Ballot.objects.create(election=self.election,
@@ -141,10 +141,10 @@ class PluralityVoteTestCase(BaseBallotVoteTestCase):
         self.assertRedirects(response, "/election/success")
         # first ballot is secret, so only the fact that the voter voted
         # should have been recorded
-        suiseiseki = User.objects.get(username="desu")
+        user1 = User.objects.get(username="user1")
         vote_objects = Vote.objects.all()
         self.assertEqual(vote_objects.count(), 1)
-        self.assertEqual(vote_objects[0].account, suiseiseki)
+        self.assertEqual(vote_objects[0].account, user1)
         vpl_objects = VotePlurality.objects.all()
         self.assertEqual(vpl_objects.count(), 1)
         self.assertTrue(vpl_objects[0].vote is None)
@@ -184,8 +184,8 @@ class PluralityVoteTestCase(BaseBallotVoteTestCase):
         self.assertRedirects(response, "/election/success")
         # check for vote secrecy again for first ballot
         first_ballot = self.election.ballots.get(is_secret=True)
-        suiseiseki = User.objects.get(username="desu")
-        vote_objects = Vote.objects.filter(account=suiseiseki)
+        user1 = User.objects.get(username="user1")
+        vote_objects = Vote.objects.filter(account=user1)
         self.assertEqual(vote_objects.count(), 1)
         vpl_objects = VotePlurality.objects.filter(
             candidate__ballot=first_ballot)
@@ -291,10 +291,10 @@ class PreferentialVoteTestCase(BaseBallotVoteTestCase):
         post_data['ballot1-1'] = '3'
         response = self.client.post("/election/", post_data)
         self.assertRedirects(response, "/election/success")
-        suiseiseki = User.objects.get(username="desu")
-        vote_objects = Vote.objects.filter(account=suiseiseki)
+        user1 = User.objects.get(username="user1")
+        vote_objects = Vote.objects.filter(account=user1)
         self.assertEqual(vote_objects.count(), 1)
-        self.assertEqual(vote_objects[0].account, suiseiseki)
+        self.assertEqual(vote_objects[0].account, user1)
         vpr_objects = VotePreferential.objects.all()
         self.assertEqual(vpr_objects.count(), 1)
         self.assertEqual(vpr_objects[0].point, 3)
@@ -324,8 +324,8 @@ class PreferentialVoteTestCase(BaseBallotVoteTestCase):
         self.assertRedirects(response, "/election/success")
         # check for vote secrecy again for first ballot
         first_ballot = self.election.ballots.get(is_secret=True)
-        suiseiseki = User.objects.get(username="desu")
-        vote_objects = Vote.objects.filter(account=suiseiseki)
+        user1 = User.objects.get(username="user1")
+        vote_objects = Vote.objects.filter(account=user1)
         self.assertEqual(vote_objects.count(), 1)
         vpr_objects = VotePreferential.objects.filter(
             candidate__ballot=first_ballot)
