@@ -63,14 +63,14 @@ class ModelTestCase(TestCase):
         user2 = User.objects.get(username="user2")
 
         # test __unicode__ and has_incumbents()
-        ballot_plurality = Ballot.objects.create(description="Best Doll",
+        ballot_plurality = Ballot.objects.create(description="lorem ipsum",
             election=self.election_current, type="Pl", seats_available=6)
         self.assertEqual(unicode(ballot_plurality),
-            "Plurality current: Best Doll")
-        ballot_preferential = Ballot.objects.create(description="DESU",
+            "Plurality current: lorem ipsum")
+        ballot_preferential = Ballot.objects.create(description="dolor sit",
             election=self.election_current, type="Pr", seats_available=2)
         self.assertEqual(unicode(ballot_preferential),
-            "Preferential current: DESU")
+            "Preferential current: dolor sit")
 
         pl_candidate1 = Candidate.objects.create(ballot=ballot_plurality,
             first_name="Jade", last_name="Stern", incumbent=True)
@@ -135,7 +135,7 @@ class ModelTestCase(TestCase):
 
     def test_vote_model(self):
         # test get_details() method
-        ballot_plurality = Ballot.objects.create(description="Best Doll",
+        ballot_plurality = Ballot.objects.create(description="lorem ipsum",
             election=self.election_current, type="Pl", seats_available=6)
         pl_candidate1 = Candidate.objects.create(ballot=ballot_plurality,
             first_name="Jade", last_name="Stern", incumbent=True)
