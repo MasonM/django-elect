@@ -1,6 +1,7 @@
 from string import Template
 
 from django import forms
+from django.core.urlresolvers import reverse
 from django.utils.http import urlquote
 from django.utils.safestring import mark_safe
 
@@ -35,8 +36,11 @@ class CandidateRowWidget(forms.Select):
         if self.candidate.biography:
             # make candidate's name a link to the appropriate anchor
             # on the auto-generated biographies page
-            link = "/election/biographies/#" + urlquote(candidate_name)
-            candidate_name = '<a href="%s">%s</a>' % (link, candidate_name)
+            candidate_name = '<a href="%s/#%s">%s</a>' % (
+                reverse('django_elect_biographies'),
+                urlquote(candidate_name),
+                candidate_name,
+            )
         select = self.form_widget.render(name, value)
         photo_unavailable = settings.DJANGO_ELECT_MEDIA_ROOT + \
                             "/img/photo_unavailable.gif"

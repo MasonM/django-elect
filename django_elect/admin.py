@@ -1,5 +1,4 @@
-from string import Template
-
+from django.core.urlresolvers import reverse
 from django.contrib import admin
 from django.http import HttpResponseRedirect
 
@@ -13,17 +12,22 @@ class BallotInline(admin.StackedInline):
     extra = 3
 
 class ElectionAdmin(admin.ModelAdmin):
-    actions = Template(u"""
-        <a href="/election/statistics/$pk/">View Statistics</a> |
-        <a href="/election/spreadsheet/$pk/">Generate Excel Spreadsheet</a> |
-        <a href="/election/disassociate/$pk/">Disassociate Accounts</a>
-    """)
+    actions = """
+        <a href="%s">View Statistics</a> |
+        <a href="%s">Generate Excel Spreadsheet</a> |
+        <a href="%s">Disassociate Accounts</a>
+    """
     change_form_template = "admin/election_change_form.html"
     list_display = ('name', 'vote_start', 'vote_end', 'admin_actions')
     inlines = [BallotInline]
 
     def admin_actions(self, obj):
-        return self.actions.substitute(pk = obj.pk)
+        kwargs = {'id': str(obj.pk)}
+        return self.actions % (
+            reverse('django_elect_stats', kwargs=kwargs),
+            reverse('django_elect_spreadsheet', kwargs=kwargs),
+            reverse('django_elect_disassociate', kwargs=kwargs),
+        )
     admin_actions.short_description = "Administrative Actions"
     admin_actions.allow_tags = True
 

@@ -1,5 +1,6 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
+from django.core.urlresolvers import reverse
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
@@ -117,7 +118,7 @@ def vote(request):
             vote = Vote.objects.create(account=request.user, election=election)
             for f in forms:
                 f.save(vote)
-            return HttpResponseRedirect('/election/success')
+            return HttpResponseRedirect(reverse("django_elect_success"))
         else:
             # they must not have selected any candidates, so show an error
             none_selected = True
@@ -129,4 +130,10 @@ def vote(request):
         'election': election,
         'forms': forms,
         'none_selected': none_selected,
+    })
+
+
+def success(request):
+    return render_to_response('django_elect/success.html', {
+        'DJANGO_ELECT_MEDIA_ROOT': settings.DJANGO_ELECT_MEDIA_ROOT,
     })
