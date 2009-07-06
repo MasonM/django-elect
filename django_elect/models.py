@@ -19,9 +19,18 @@ class Election(models.Model):
         "the header. Enter the text as HTML.")
     vote_start = models.DateTimeField(help_text="Start of voting")
     vote_end = models.DateTimeField(help_text="End of voting")
+    allowed_voters = models.ManyToManyField(User, blank=True)
 
     def __unicode__(self):
         return unicode(self.name)
+
+    def voting_allowed_for_user(self, user):
+        """
+        Returns True if not is between vote_start and vote_end, inclusive,
+        and given user is in allowed_voters and user hasn't already voted.
+        """
+        return (self.voting_allowed() and not self.has_voted(user) and
+                self.allowed_voters.filter(id=user.id))
 
     def voting_allowed(self):
         """
@@ -176,6 +185,10 @@ class Candidate(models.Model):
         ordering = ['last_name', 'first_name']
 
 
+class VotingNotAllowedException(Exception):
+    pass
+
+
 class Vote(models.Model):
     """
     Vote associates individual candidate selections with an account and
@@ -188,6 +201,12 @@ class Vote(models.Model):
 
     def __unicode__(self):
         return unicode(self.account) + " - " + unicode(self.election)
+
+    def save(self, force_insert=False, force_update=False):
+        if not self.election.allowed_voters.filter(id=self.account.id):
+            msg = 'The account %s is not allowed to vote in this election.'
+            raise VotingNotAllowedException(msg % unicode(self.account))
+        super(Vote, self).save(force_insert, force_update)
 
     def get_details(self):
         """

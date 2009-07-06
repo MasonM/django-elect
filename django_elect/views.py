@@ -95,8 +95,7 @@ def disassociate_accounts(request, id):
 @login_required
 def vote(request):
     election = Election.get_latest_or_404()
-    voting_allowed = election and election.voting_allowed()
-    if not voting_allowed or election.has_voted(request.user):
+    if not election.voting_allowed_for_user(request.user):
         # they aren't supposed to be on this page
         return HttpResponseRedirect(settings.LOGIN_URL)
 

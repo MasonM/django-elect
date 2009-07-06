@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 
 from django_elect.models import Ballot, Candidate, Election, Vote, \
-    VotePlurality, VotePreferential
+    VotePlurality, VotePreferential, VotingNotAllowedException
 from django_elect.tests.utils import *
 
 
@@ -37,26 +37,32 @@ class ModelTestCase(TestCase):
         self.assertEqual(unicode(self.election_future), u"future")
         self.assertFalse(self.election_future.voting_allowed())
 
-        # test has_voted() method
+        # test has_voted() and voting_allowed_for_user() methods
         self.assertFalse(self.election_current.has_voted(user1))
-        Vote.objects.create(account=user1,
-            election=self.election_current)
+        self.assertFalse(self.election_current.voting_allowed_for_user(user1))
+        self.election_current.allowed_voters.add(user1)
+        self.assertTrue(self.election_current.voting_allowed_for_user(user1))
+        self.assertFalse(self.election_current.voting_allowed_for_user(user2))
+        Vote.objects.create(account=user1, election=self.election_current)
         self.assertTrue(self.election_current.has_voted(user1))
-        self.assertFalse(self.election_finished.has_voted(user1))
         self.assertFalse(self.election_current.has_voted(user2))
-        Vote.objects.create(account=user2, election=self.election_future)
-        self.assertTrue(self.election_future.has_voted(user2))
-        self.assertFalse(self.election_future.has_voted(user1))
-        Vote.objects.create(account=user1,
-            election=self.election_future)
-        self.assertTrue(self.election_future.has_voted(user1))
+        self.assertFalse(self.election_current.voting_allowed_for_user(user1))
+
+        self.election_current.allowed_voters.add(user2)
+        self.assertTrue(self.election_current.voting_allowed_for_user(user2))
+        Vote.objects.create(account=user2, election=self.election_current)
+        self.assertFalse(self.election_current.voting_allowed_for_user(user2))
+        self.assertTrue(self.election_current.has_voted(user2))
+
+        self.election_finished.allowed_voters.add(user1)
+        self.assertFalse(self.election_finished.voting_allowed_for_user(user1))
 
         # test disassociate_accounts() method
-        self.assertEqual(self.election_future.votes.count(), 2)
-        self.election_future.disassociate_accounts()
-        self.assertEqual(self.election_future.votes.count(), 2)
-        self.assertFalse(self.election_future.has_voted(user1))
-        self.assertFalse(self.election_future.has_voted(user2))
+        self.assertEqual(self.election_current.votes.count(), 2)
+        self.election_current.disassociate_accounts()
+        self.assertEqual(self.election_current.votes.count(), 2)
+        self.assertFalse(self.election_current.has_voted(user1))
+        self.assertFalse(self.election_current.has_voted(user2))
 
     def test_ballot_model(self):
         user1 = User.objects.get(username="user1")
@@ -81,6 +87,7 @@ class ModelTestCase(TestCase):
         self.assertFalse(ballot_preferential.has_incumbents())
 
         # test get_candidate_stats() with a plurality ballot
+        self.election_current.allowed_voters.add(user1, user2)
         self.assertEqual(ballot_plurality.get_candidate_stats(),
             [(pl_candidate1, 0)])
         temp_vote1 = Vote.objects.create(account=user1,
@@ -140,8 +147,13 @@ class ModelTestCase(TestCase):
         pl_candidate1 = Candidate.objects.create(ballot=ballot_plurality,
             first_name="Jade", last_name="Stern", incumbent=True)
 
-        temp_vote1 = Vote.objects.create(election=self.election_current,
-            account=User.objects.get(username="user1"))
+        user1 = User.objects.get(username="user1")
+        temp_vote1 = lambda: Vote.objects.create(account=user1,
+            election=self.election_current)
+        # shouldn't be allowed to save a vote for someone not in allowed_voters
+        self.assertRaises(VotingNotAllowedException, temp_vote1)
+        self.election_current.allowed_voters.add(user1)
+        temp_vote1 = temp_vote1()
         self.assertEqual(repr(temp_vote1.get_details()), repr(
             [(ballot_plurality, [])]))
         ballot_preferential = Ballot.objects.create(description="DESU",

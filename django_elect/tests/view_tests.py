@@ -20,6 +20,7 @@ class VoteTestCase(TestCase):
         self.assertRedirects(response, settings.LOGIN_URL+"?next=/election/")
 
         # should get a 404 if no election exists
+        user1 = User.objects.get(username="user1")
         self.client.login(username="user1", password="desu")
         response = self.client.get("/election/")
         self.assertEqual(response.status_code, 404)
@@ -27,11 +28,20 @@ class VoteTestCase(TestCase):
         # should get redirected if election exists but not active
         past_election = Election.objects.create(name="finished",
             vote_start=week_ago, vote_end=yesterday)
+        past_election.allowed_voters.add(user1)
         response = self.client.get("/election/")
         self.assertRedirects(response, settings.LOGIN_URL)
 
         future_election = Election.objects.create(name="future",
             vote_start=tomorrow, vote_end=next_week)
+        future_election.allowed_voters.add(user1)
+        response = self.client.get("/election/")
+        self.assertRedirects(response, settings.LOGIN_URL)
+
+        # should get redirected if election exists and is active, not voter
+        # not in allowed_voters
+        current_election = Election.objects.create(name="current",
+            vote_start=week_ago, vote_end=tomorrow)
         response = self.client.get("/election/")
         self.assertRedirects(response, settings.LOGIN_URL)
 
@@ -58,9 +68,11 @@ class BaseBallotVoteTestCase(TestCase):
         First ballot is secret and has 2 seats available w/ 4 candidates.
         Second isn't secret and has 4 seats available w/ 6 candidate.
         """
+        user1 = User.objects.get(username="user1")
         self.client.login(username="user1", password="desu")
         self.election = Election.objects.create(name="current",
             introduction="Intro1", vote_start=week_ago, vote_end=tomorrow)
+        self.election.allowed_voters.add(user1)
         ballot1 = Ballot.objects.create(election=self.election,
             type=self.ballot_type, seats_available=2, is_secret=True,
             write_in_available=True, introduction="something something")
