@@ -12,7 +12,7 @@ class BallotInline(admin.StackedInline):
     extra = 3
 
 class ElectionAdmin(admin.ModelAdmin):
-    actions = """
+    actions_html = """
         <a href="%s">View Statistics</a> |
         <a href="%s">Generate Excel Spreadsheet</a> |
         <a href="%s">Disassociate Accounts</a>
@@ -24,7 +24,7 @@ class ElectionAdmin(admin.ModelAdmin):
 
     def admin_actions(self, obj):
         kwargs = {'id': str(obj.pk)}
-        return self.actions % (
+        return self.actions_html % (
             reverse('django_elect_stats', kwargs=kwargs),
             reverse('django_elect_spreadsheet', kwargs=kwargs),
             reverse('django_elect_disassociate', kwargs=kwargs),
