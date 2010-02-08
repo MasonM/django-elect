@@ -6,10 +6,6 @@ a img {
   border: 0;
 }
 
-div#content {
-  border-top: solid thin gray;
-}
-
 .candidate-row {
   height: 230px;
   vertical-align: middle;
