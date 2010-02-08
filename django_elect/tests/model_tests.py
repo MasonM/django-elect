@@ -39,20 +39,26 @@ class ModelTestCase(TestCase):
 
         # test has_voted() and voting_allowed_for_user() methods
         self.assertFalse(self.election_current.has_voted(user1))
-        self.assertFalse(self.election_current.voting_allowed_for_user(user1))
+        self.assertFalse(self.election_current.has_voted(user2))
+        self.assertTrue(self.election_current.voting_allowed_for_user(user1))
+        self.assertTrue(self.election_current.voting_allowed_for_user(user2))
+
         self.election_current.allowed_voters.add(user1)
         self.assertTrue(self.election_current.voting_allowed_for_user(user1))
         self.assertFalse(self.election_current.voting_allowed_for_user(user2))
+
         Vote.objects.create(account=user1, election=self.election_current)
         self.assertTrue(self.election_current.has_voted(user1))
         self.assertFalse(self.election_current.has_voted(user2))
         self.assertFalse(self.election_current.voting_allowed_for_user(user1))
+        self.assertFalse(self.election_current.voting_allowed_for_user(user2))
 
         self.election_current.allowed_voters.add(user2)
         self.assertTrue(self.election_current.voting_allowed_for_user(user2))
+
         Vote.objects.create(account=user2, election=self.election_current)
-        self.assertFalse(self.election_current.voting_allowed_for_user(user2))
         self.assertTrue(self.election_current.has_voted(user2))
+        self.assertFalse(self.election_current.voting_allowed_for_user(user2))
 
         self.election_finished.allowed_voters.add(user1)
         self.assertFalse(self.election_finished.voting_allowed_for_user(user1))

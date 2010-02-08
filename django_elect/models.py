@@ -19,7 +19,8 @@ class Election(models.Model):
         "the header. Enter the text as HTML.")
     vote_start = models.DateTimeField(help_text="Start of voting")
     vote_end = models.DateTimeField(help_text="End of voting")
-    allowed_voters = models.ManyToManyField(User, blank=True)
+    allowed_voters = models.ManyToManyField(User, blank=True,
+        help_text="If empty, all registered users will be allowed to vote.")
 
     def __unicode__(self):
         return unicode(self.name)
@@ -30,7 +31,8 @@ class Election(models.Model):
         and given user is in allowed_voters and user hasn't already voted.
         """
         return (self.voting_allowed() and not self.has_voted(user) and
-                self.allowed_voters.filter(id=user.id))
+            (self.allowed_voters.count() == 0 or
+            self.allowed_voters.filter(id=user.id)))
 
     def voting_allowed(self):
         """
