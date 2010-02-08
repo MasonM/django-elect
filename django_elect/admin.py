@@ -41,9 +41,6 @@ class ElectionAdmin(admin.ModelAdmin):
         self.message_user(request, msg)
         url = "../../ballot/?election__id__exact=%i" % obj.pk
         return HttpResponseRedirect(url)
-
-    class Media:
-        js = [settings.DJANGO_ELECT_MEDIA_ROOT+"/js/jquery-1.3.2.min.js"]
 admin.site.register(Election, ElectionAdmin)
 
 
