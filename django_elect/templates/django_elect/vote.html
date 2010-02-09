@@ -50,24 +50,19 @@ $(function() {
       {% endif %}
       </p>
       <table class="ballot">
-        <col class="ballot-col-select" />
-        <col class="ballot-col-name" />
-        <col class="ballot-col-institution" />
-        <col class="ballot-col-image" />
-        <tr>
-          <th>&nbsp;</th>
-          <th>Name</th>
-          <th>Institution</th>
-          <th>Picture</th>
-        </tr>
+        <thead>
+          {{form.get_table_info.header|safe}}
+        </thead>
+        <tbody>
         {% for field in form %}
           {{ field }}
         {% endfor %}
+        </tbody>
       </table>
     </div>
   </div>
   <br/>
 {% endfor %}
-  <input type="submit" name="vote" value="Submit Vote"/>
+<p><input type="submit" name="vote" value="Submit Vote"/></p>
 </form>
 {% endblock %}

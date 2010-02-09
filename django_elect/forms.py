@@ -13,16 +13,7 @@ class CandidateRowWidget(forms.Select):
     """
     Form widget for showing a table row with information on a single candidate.
     """
-    template = Template(u"""
-      <tr class="candidate-row">
-        <td>$select</td>
-        <td>$incum$name</td>
-        <td>$inst</td>
-        <td><img src="$image" alt="Photograph"/></td>
-      </tr>
-    """)
-
-    def __init__(self, candidate, form_widget, *args, **kwargs):
+    def __init__(self, candidate, form_widget, template, *args, **kwargs):
         """
         "candidate" is the Candidate to show, and "form_widget" is the form
         input to show next to the candidate's name
@@ -30,6 +21,7 @@ class CandidateRowWidget(forms.Select):
         super(CandidateRowWidget, self).__init__(*args, **kwargs)
         self.candidate = candidate
         self.form_widget = form_widget
+        self.template = template
 
     def render(self, name, value, attrs=None, choices=()):
         candidate_name = self.candidate.get_name()
@@ -69,6 +61,44 @@ class BaseVoteForm(forms.Form):
         Returns True if this form is valid and contains at least one candidate
         """
         return self.is_valid() and len(self.candidate_list) >= 1
+
+    def get_table_info(self):
+        """
+        Returns the string to use for constructing the ballot table's header
+        row and a Template object to use for each body row.
+
+        This is done dynamically so that the columns for "candidate image" and
+        "candiate institution" are ommitted if no candidates in the ballot have
+        a image or institution defined.
+        """
+        candidates = self.ballot.candidates.filter(write_in=False)
+        has_image = any([c.image_url for c in candidates])
+        has_institution = any([c.institution for c in candidates])
+        header_cols = """
+            <col class="ballot-col-select" />
+            <col class="ballot-col-name" />"""
+        header = """
+            <tr>
+                <th>&nbsp;</th>
+                <th>Name</th>"""
+        row_template = """
+            <tr class="candidate-row">
+                <td>$select</td>
+                <td>$incum$name</td>""" 
+        if has_institution:
+            row_template += "<td>$inst</td>"
+            header_cols += '<col class="ballot-col-institution"/>'
+            header += '<th>Institution</th>'
+        if has_image:
+            row_template += '<td><img src="$image" alt="Photograph"/></td>'
+            header_cols += '<col class="ballot-col-image" />'
+            header += '<th>Picture</th>'
+        row_template += '</tr>'
+        header += '</tr>'
+        return {
+            'header' : header_cols + header,
+            'row_template': Template(row_template),
+        }
 
     def save(self, vote):
         """
@@ -134,12 +164,13 @@ class PluralityVoteForm(BaseVoteForm):
     """
     def __init__(self, *args, **kwargs):
         super(PluralityVoteForm, self).__init__(*args, **kwargs)
+        template = self.get_table_info()['row_template']
         candidates = self.ballot.candidates.filter(write_in=False)
         select = forms.CheckboxInput()
         for candidate in candidates:
+            widget = CandidateRowWidget(candidate, select, template)
             self.fields[candidate.pk] = forms.BooleanField(label="",
-                widget=CandidateRowWidget(candidate, select),
-                required=False)
+                widget=widget, required=False)
         if self.ballot.write_in_available:
             self.fields['write_in'] = WriteInField(widget=self.WriteInWidget)
 
@@ -192,6 +223,7 @@ class PreferentialVoteForm(BaseVoteForm):
     """
     def __init__(self, *args, **kwargs):
         super(PreferentialVoteForm, self).__init__(*args, **kwargs)
+        template = self.get_table_info()['row_template']
         candidates = self.ballot.candidates.filter(write_in=False)
         #we use the Borda count method for preferential ballots, so each
         #candidate select box should have options in the format
@@ -199,12 +231,12 @@ class PreferentialVoteForm(BaseVoteForm):
         point_options = [(0, 0)]
         points = range(1, candidates.count() + 1)
         point_options += zip(points[::-1], points)
-        widget = forms.Select(choices=point_options,
-                              attrs={'style': 'width: 40px'})
+        select = forms.Select(choices=point_options,
+            attrs={'style': 'width: 40px'})
         for candidate in candidates:
+            widget = CandidateRowWidget(candidate, select, template)
             self.fields[candidate.pk] = forms.ChoiceField(label="",
-                choices=point_options,
-                widget=CandidateRowWidget(candidate, widget))
+                choices=point_options, widget=widget)
         if self.ballot.write_in_available:
             self.fields['write_in'] = PreferentialWriteInField(
                 choices=point_options)
