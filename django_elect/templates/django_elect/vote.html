@@ -33,15 +33,6 @@ $(function() {
       {% if form.ballot.introduction %}
         {{form.ballot.introduction|safe}}<br/>
       {% endif %}
-      {% ifequal form.ballot.type "Pl" %}
-        Place a checkmark next to {{form.ballot.seats_available}} or 
-        fewer candidates.
-      {% else %}
-        Rank your preferencies in order, selecting 1 for your first choice,
-        2 for your second choice, and so on. Leave the drop-down box as "0"
-        if you do not wish to rank a particular candidate. 
-        No two candidates may receive the same ranking. 
-      {% endifequal %}
       {% if form.ballot.has_incumbents %}
         An asterisk before a name indicates an incumbent.
       {% endif %}
