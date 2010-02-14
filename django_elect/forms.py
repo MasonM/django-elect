@@ -9,7 +9,7 @@ from django_elect.models import Candidate, VotePlurality, VotePreferential
 from django_elect import settings
 
 
-class CandidateRowWidget(forms.Select):
+class CandidateRowWidget(forms.Widget):
     """
     Form widget for showing a table row with information on a single candidate.
     """
@@ -23,7 +23,7 @@ class CandidateRowWidget(forms.Select):
         self.form_widget = form_widget
         self.template = template
 
-    def render(self, name, value, attrs=None, choices=()):
+    def render(self, name, value, attrs=None):
         candidate_name = self.candidate.get_name()
         if self.candidate.biography:
             # make candidate's name a link to the appropriate anchor
@@ -33,7 +33,7 @@ class CandidateRowWidget(forms.Select):
                 urlquote(candidate_name),
                 candidate_name,
             )
-        select = self.form_widget.render(name, value)
+        select = self.form_widget.render(name, value, attrs)
         photo_unavailable = settings.DJANGO_ELECT_MEDIA_ROOT + \
                             "/img/photo_unavailable.gif"
         return mark_safe(self.template.substitute({
@@ -55,6 +55,14 @@ class BaseVoteForm(forms.Form):
     def __init__(self, ballot, *args, **kwargs):
         super(BaseVoteForm, self).__init__(*args, **kwargs)
         self.ballot = ballot
+
+    def __unicode__(self):
+        output = ['<table class="ballot">', self.get_table_info()['header']]
+        for name, field in self.fields.items():
+            bf = forms.forms.BoundField(self, field, name)
+            output.append(unicode(bf))
+        output.append('</table>')
+        return mark_safe(u'\n'.join(output))
 
     def has_candidates(self):
         """

@@ -40,16 +40,7 @@ $(function() {
         {% show_errors form %}
       {% endif %}
       </p>
-      <table class="ballot">
-        <thead>
-          {{form.get_table_info.header|safe}}
-        </thead>
-        <tbody>
-        {% for field in form %}
-          {{ field }}
-        {% endfor %}
-        </tbody>
-      </table>
+      {{form}}
     </div>
   </div>
   <br/>
