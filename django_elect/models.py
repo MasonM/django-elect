@@ -205,7 +205,7 @@ class Vote(models.Model):
         return unicode(self.account) + " - " + unicode(self.election)
 
     def save(self, force_insert=False, force_update=False):
-        if not self.election.allowed_voters.filter(id=self.account.id):
+        if not self.election.voting_allowed_for_user(self.account):
             msg = 'The account %s is not allowed to vote in this election.'
             raise VotingNotAllowedException(msg % unicode(self.account))
         super(Vote, self).save(force_insert, force_update)
