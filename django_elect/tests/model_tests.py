@@ -110,6 +110,8 @@ class ModelTestCase(TestCase):
         VotePlurality.objects.create(vote=temp_vote2, candidate=pl_candidate1)
         self.assertEqual(ballot_plurality.get_candidate_stats(),
             [(pl_candidate1, 2), (pl_candidate2, 0)])
+        temp_vote1.delete()
+        temp_vote2.delete()
 
         # test get_candidate_stats with a preferential ballot
         self.assertEqual(ballot_preferential.get_candidate_stats(),
@@ -147,6 +149,9 @@ class ModelTestCase(TestCase):
         self.assertEqual(candidate2.get_name(), "Hina Ichigo")
 
     def test_vote_model(self):
+        user2 = User.objects.get(username="user2")
+        self.election_current.allowed_voters.add(user2)
+
         # test get_details() method
         ballot_plurality = Ballot.objects.create(description="lorem ipsum",
             election=self.election_current, type="Pl", seats_available=6)
