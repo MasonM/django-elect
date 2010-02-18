@@ -73,12 +73,14 @@ class BaseBallotVoteTestCase(TestCase):
         self.election = Election.objects.create(name="current",
             introduction="Intro1", vote_start=week_ago, vote_end=tomorrow)
         self.election.allowed_voters.add(user1)
+
         ballot1 = Ballot.objects.create(election=self.election,
             type=self.ballot_type, seats_available=2, is_secret=True,
             write_in_available=True, introduction="something something")
         for i in range(1, 5):
             Candidate.objects.create(ballot=ballot1,
                 first_name="Ballot 1", last_name="Candidate %i" % i)
+
         ballot2 = Ballot.objects.create(election=self.election,
             type=self.ballot_type, seats_available=4, is_secret=False,
             write_in_available=False)
@@ -125,15 +127,37 @@ class PluralityVoteTestCase(BaseBallotVoteTestCase):
     """
     ballot_type = "Pl"
 
+    def setUp(self):
+        """
+        Add 2 more ballots, both with 1 seat available and 2 candidates, one
+        with write-in and one without, to test radio widget functionality.
+        """
+        super(PluralityVoteTestCase, self).setUp()
+        ballot3 = Ballot.objects.create(election=self.election,
+            type=self.ballot_type, seats_available=1, is_secret=False,
+            write_in_available=False)
+        for i in range(1, 3):
+            Candidate.objects.create(ballot=ballot3,
+                first_name="Ballot 3", last_name="Candidate %i" % i)
+
+        ballot4 = Ballot.objects.create(election=self.election,
+            type=self.ballot_type, seats_available=1, is_secret=False,
+            write_in_available=True)
+        for i in range(1, 3):
+            Candidate.objects.create(ballot=ballot4,
+                first_name="Ballot 4", last_name="Candidate %i" % i)
+
     def test_excessive_selections(self):
         # shouldn't be allowed to submit a vote for more candidates than
         # seats available
         data = ['ballot1-1', 'ballot1-2', 'ballot1-3']
         response = self.client.post("/election/", dict.fromkeys(data, "on"))
         self.assertContains(response, 'id="error0"')
+
         data += ['ballot2-6', 'ballot2-7']
         response = self.client.post("/election/", dict.fromkeys(data, "on"))
         self.assertContains(response, 'id="error0"')
+
         data = data[3:] + ['ballot2-8', 'ballot2-9', 'ballot2-10']
         response = self.client.post("/election/", dict.fromkeys(data, "on"))
         self.assertContains(response, 'id="error0"')
@@ -147,10 +171,18 @@ class PluralityVoteTestCase(BaseBallotVoteTestCase):
         })
         self.assertContains(response, 'id="error0"')
 
+        response = self.client.post("/election/", {
+            'ballot4-write_in_0': 'Jade',
+            'ballot4-write_in_1': 'Stern',
+            'ballot4-13': 'on',
+        })
+        self.assertContains(response, 'id="error0"')
+
     def test_single_selection(self):
         # should be able to vote by just checking one candidate
         response = self.client.post("/election/", {'ballot1-1': 'on'})
         self.assertRedirects(response, "/election/success")
+
         # first ballot is secret, so only the fact that the voter voted
         # should have been recorded
         user1 = User.objects.get(username="user1")
@@ -174,11 +206,15 @@ class PluralityVoteTestCase(BaseBallotVoteTestCase):
         write_in_data = {
             'ballot1-write_in_0': "Jade",
             'ballot1-write_in_1': "Stern",
+            'ballot4-write_in_0': "Hina",
+            'ballot4-write_in_1': "Ichigo",
         }
         response = self.client.post("/election/", write_in_data)
         self.assertRedirects(response, "/election/success")
         new_candidate = Candidate.objects.get(first_name="Jade")
+        new_candidate2 = Candidate.objects.get(first_name="Hina")
         self.assertTrue(new_candidate.write_in)
+        self.assertTrue(new_candidate2.write_in)
 
     def test_complete_ballot(self):
         # should be able to vote by selecting the same # of candidates as the
@@ -191,26 +227,39 @@ class PluralityVoteTestCase(BaseBallotVoteTestCase):
             'ballot2-8': 'on',
             'ballot2-9': 'on',
             'ballot2-10': 'on',
+            'ballot3': 'ballot3-12',
+            'ballot4-14': 'on',
         }
         response = self.client.post("/election/", data)
         self.assertRedirects(response, "/election/success")
-        # check for vote secrecy again for first ballot
-        first_ballot = self.election.ballots.get(is_secret=True)
+
         user1 = User.objects.get(username="user1")
         vote_objects = Vote.objects.filter(account=user1)
         self.assertEqual(vote_objects.count(), 1)
+
+        # check for vote secrecy again for first ballot
+        first_ballot = self.election.ballots.get(id=1)
         vpl_objects = VotePlurality.objects.filter(
             candidate__ballot=first_ballot)
         self.assertEqual(vpl_objects.count(), 2)
         for vpl in vpl_objects:
             self.assertTrue(vpl.vote is None)
-        # now do second ballot
-        second_ballot = self.election.ballots.get(is_secret=False)
+
+        second_ballot = self.election.ballots.get(id=2)
         vpl_objects = VotePlurality.objects.filter(
             candidate__ballot=second_ballot)
         self.assertEqual(vpl_objects.count(), 4)
         for vpl in vpl_objects:
             self.assertEqual(vpl.vote, vote_objects[0])
+
+        third_ballot = self.election.ballots.get(id=3)
+        fourth_ballot = self.election.ballots.get(id=4)
+        for ballot in [third_ballot, fourth_ballot]:
+            vpl_objects = VotePlurality.objects.filter(
+                candidate__ballot=ballot)
+            self.assertEqual(vpl_objects.count(), 1)
+            for vpl in vpl_objects:
+                self.assertEquals(vpl.vote, vote_objects[0])
 
 
 class PreferentialVoteTestCase(BaseBallotVoteTestCase):
@@ -287,8 +336,10 @@ class PreferentialVoteTestCase(BaseBallotVoteTestCase):
         post_data.update(write_in_data)
         response = self.client.post("/election/", post_data)
         self.assertRedirects(response, "/election/success")
+
         new_candidate = Candidate.objects.get(first_name="Ralph")
         self.assertTrue(new_candidate.write_in)
+
         first_ballot = self.election.ballots.get(is_secret=True)
         vpr_objects = VotePreferential.objects.filter(
             candidate__ballot=first_ballot)
@@ -303,10 +354,12 @@ class PreferentialVoteTestCase(BaseBallotVoteTestCase):
         post_data['ballot1-1'] = '3'
         response = self.client.post("/election/", post_data)
         self.assertRedirects(response, "/election/success")
+
         user1 = User.objects.get(username="user1")
         vote_objects = Vote.objects.filter(account=user1)
         self.assertEqual(vote_objects.count(), 1)
         self.assertEqual(vote_objects[0].account, user1)
+
         vpr_objects = VotePreferential.objects.all()
         self.assertEqual(vpr_objects.count(), 1)
         self.assertEqual(vpr_objects[0].point, 3)
@@ -334,11 +387,13 @@ class PreferentialVoteTestCase(BaseBallotVoteTestCase):
         post_data.update(modifications)
         response = self.client.post("/election/", post_data)
         self.assertRedirects(response, "/election/success")
-        # check for vote secrecy again for first ballot
-        first_ballot = self.election.ballots.get(is_secret=True)
+
         user1 = User.objects.get(username="user1")
         vote_objects = Vote.objects.filter(account=user1)
         self.assertEqual(vote_objects.count(), 1)
+
+        # check for vote secrecy again for first ballot
+        first_ballot = self.election.ballots.get(is_secret=True)
         vpr_objects = VotePreferential.objects.filter(
             candidate__ballot=first_ballot)
         self.assertEqual(vpr_objects.count(), 4)
@@ -347,6 +402,7 @@ class PreferentialVoteTestCase(BaseBallotVoteTestCase):
         self.assertEqual(vpr_objects.get(candidate__id=4).point, 1)
         new_candidate = Candidate.objects.get(first_name="Ralph")
         self.assertEqual(vpr_objects.get(candidate=new_candidate).point, 2)
+
         # now do second ballot
         second_ballot = self.election.ballots.get(is_secret=False)
         vpr_objects = VotePreferential.objects.filter(

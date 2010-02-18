@@ -23,6 +23,9 @@ class CandidateRowWidget(forms.Widget):
         self.form_widget = form_widget
         self.template = template
 
+    def value_from_datadict(self, data, files, name):
+        return self.form_widget.value_from_datadict(data, files, name)
+
     def render(self, name, value, attrs=None):
         candidate_name = self.candidate.get_name()
         if self.candidate.biography:
@@ -92,7 +95,7 @@ class BaseVoteForm(forms.Form):
         row_template = """
             <tr class="candidate-row">
                 <td>$select</td>
-                <td>$incum$name</td>""" 
+                <td>$incum$name</td>"""
         if has_institution:
             row_template += "<td>$inst</td>"
             header_cols += '<col class="ballot-col-institution"/>'
@@ -104,7 +107,7 @@ class BaseVoteForm(forms.Form):
         row_template += '</tr>'
         header += '</tr>'
         return {
-            'header' : header_cols + header,
+            'header': header_cols + header,
             'row_template': Template(row_template),
         }
 
@@ -174,13 +177,36 @@ class PluralityVoteForm(BaseVoteForm):
         super(PluralityVoteForm, self).__init__(*args, **kwargs)
         template = self.get_table_info()['row_template']
         candidates = self.ballot.candidates.filter(write_in=False)
-        select = forms.CheckboxInput()
+        if self.ballot.seats_available == 1 and \
+            not self.ballot.write_in_available:
+            select = self.RadioWidget(self.ballot.pk)
+        else:
+            select = forms.CheckboxInput()
         for candidate in candidates:
             widget = CandidateRowWidget(candidate, select, template)
             self.fields[candidate.pk] = forms.BooleanField(label="",
                 widget=widget, required=False)
         if self.ballot.write_in_available:
             self.fields['write_in'] = WriteInField(widget=self.WriteInWidget)
+
+    class RadioWidget(forms.widgets.Widget):
+        """
+        Slightly hackish widget for representing two candidates on a single
+        ballot using radio buttons. Ensures the names of the radio inputs are
+        the same.
+        """
+        def __init__(self, ballot_id):
+            self.name = "ballot%i" % ballot_id
+            self.attrs = {}
+
+        def render(self, value, name=None, attrs=None):
+            final_attrs = self.build_attrs(attrs, type='radio',
+                value=value, name=self.name)
+            return mark_safe(u'<input%s />' % forms.util.flatatt(final_attrs))
+
+        def value_from_datadict(self, data, files, name):
+            value = data.get(unicode(self.name))
+            return (value == name)
 
     class WriteInWidget(forms.MultiWidget):
         """
@@ -289,8 +315,7 @@ class PreferentialWriteInField(WriteInField):
             forms.ChoiceField(choices=choices),
         )
         super(PreferentialWriteInField, self).__init__(
-            fields=fields, widget=self.WriteInWidget, *args, **kwargs
-        )
+            fields=fields, widget=self.WriteInWidget, *args, **kwargs)
 
     def compress(self, data_list):
         # make sure something was filled in for name
