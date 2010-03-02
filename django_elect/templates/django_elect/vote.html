@@ -29,17 +29,12 @@ $(function() {
       <b>{{form.ballot.description}}</b> - {{form.ballot.get_type_display}}
     </div>
     <div class="content">
-      <p>
       {% if form.ballot.introduction %}
         {{form.ballot.introduction|safe}}<br/>
-      {% endif %}
-      {% if form.ballot.has_incumbents %}
-        An asterisk before a name indicates an incumbent.
       {% endif %}
       {% if form.errors %}
         {% show_errors form %}
       {% endif %}
-      </p>
       {{form}}
     </div>
   </div>
