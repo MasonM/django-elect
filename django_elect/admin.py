@@ -17,7 +17,6 @@ class ElectionAdmin(admin.ModelAdmin):
         <a href="%s">Generate Excel Spreadsheet</a> |
         <a href="%s">Disassociate Accounts</a>
     """
-    change_form_template = "admin/election_change_form.html"
     list_display = ('name', 'vote_start', 'vote_end', 'admin_actions')
     filter_horizontal = ("allowed_voters",)
     inlines = [BallotInline]
