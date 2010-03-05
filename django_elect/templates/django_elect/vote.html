@@ -1,16 +1,6 @@
 {% extends "django_elect/base.html" %}
 {% load show_errors %}
 {% block title %}{{election}} Election - Vote{% endblock %}
-{% block extrahead %}
-<script type="text/javascript">
-$(function() {
-    //jump to first error message on page load, if any
-    if(document.getElementById("error0")) {
-        window.location.hash = "error0";
-    }
-})
-</script>
-{% endblock %}
 {% block content %}
 <form method="post" action="index.html">
   <h2>{{election}} Election</h2>
@@ -34,6 +24,9 @@ $(function() {
       {% endif %}
       {% if form.errors %}
         {% show_errors form %}
+        <script type="text/javascript">
+        window.location.hash = "error0";
+        </script>
       {% endif %}
       {{form}}
     </div>
