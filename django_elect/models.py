@@ -3,7 +3,11 @@ from datetime import datetime
 from django.http import Http404
 from django.db import models
 from django.db.models import Q
-from django.contrib.auth.models import User
+from django.db.models import get_model
+from django_elect import settings
+
+
+user_model = get_model(*settings.DJANGO_ELECT_USER_MODEL)
 
 
 class Election(models.Model):
@@ -19,7 +23,7 @@ class Election(models.Model):
         "the header. Enter the text as HTML.")
     vote_start = models.DateTimeField(help_text="Start of voting")
     vote_end = models.DateTimeField(help_text="End of voting")
-    allowed_voters = models.ManyToManyField(User, blank=True,
+    allowed_voters = models.ManyToManyField(user_model, blank=True,
         help_text="If empty, all registered users will be allowed to vote.")
 
     def __unicode__(self):
@@ -196,7 +200,7 @@ class Vote(models.Model):
     Vote associates individual candidate selections with an account and
     an election.
     """
-    account = models.ForeignKey(User, null=True)
+    account = models.ForeignKey(user_model, null=True)
     election = models.ForeignKey(Election, related_name="votes",
         limit_choices_to=Q(vote_start__lte=datetime.now()) &\
                          Q(vote_end__gte=datetime.now()))
