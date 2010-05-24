@@ -1,8 +1,8 @@
 <table>
   <tr>
-    <th>&nbsp;</th>
+    <th colspan="2">&nbsp;</th>
     {% for ballot in ballots %}
-    <th colspan="{{candidates.count}}">{{ballot}}</th>
+    <th colspan="{{ballot.candidates.all.count}}">{{ballot}}</th>
     {% endfor %}
   </tr>
   <tr>
