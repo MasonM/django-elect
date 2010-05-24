@@ -17,7 +17,7 @@ class VoteTestCase(TestCase):
     def test_when_voting_unallowed(self):
         # should get redirected when not logged in
         response = self.client.get("/election/")
-        self.assertRedirects(response, settings.LOGIN_URL+"?next=/election/")
+        self.assertRedirects(response, settings.LOGIN_URL + "?next=/election/")
 
         # should get a 404 if no election exists
         user1 = User.objects.get(username="user1")

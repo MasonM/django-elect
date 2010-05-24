@@ -191,5 +191,5 @@ class ModelTestCase(TestCase):
         cand_list = [pl_candidate1]
         votes_points = self.election_current.get_votes_with_points()
         self.assertEqual(len(votes_points), 1);
-        self.assertEqual(votes_points[0], temp_vote1)
-        self.assertEquals(vote_points[1], [1, 2, 3]);
+        self.assertEqual(votes_points[0][0], temp_vote1)
+        self.assertEqual(votes_points[0][1], ['1', '2', '3']);
