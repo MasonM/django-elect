@@ -10,7 +10,7 @@ urlpatterns = patterns('',
     (r'^admin/(.*)', admin.site.root),
     (r'^admin_docs/', include('django.contrib.admindocs.urls')),
     (r'^election/', include('django_elect.urls')),
-    (r'^accounts/login/', 'django.contrib.auth.views.login', {
+    (r'^account/', 'django.contrib.auth.views.login', {
         'template_name': 'admin/login.html'
     }),
 )
