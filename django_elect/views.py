@@ -58,13 +58,9 @@ def generate_spreadsheet(request, id):
     """
     election = get_object_or_404(Election, pk=id)
     ballots = election.ballots.all()
-    ballots = SortedDict([(b, b.candidates.all()) for b in ballots])
-    # Flatten candidate list after converting QuerySets into lists
-    candidates = sum(map(list, ballots.values()), [])
-    votes = [(v, v.get_points_for_candidates(candidates))
-             for v in election.votes.all()]
+    votes = election.get_votes_with_points()
     response = render_to_response("django_elect/spreadsheet.html", {
-        'ballots': ballots.items(),
+        'ballots': ballots,
         'votes': votes,
     })
     filename = "election%s.xls" % (election.pk)

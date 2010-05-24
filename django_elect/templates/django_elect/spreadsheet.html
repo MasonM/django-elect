@@ -1,15 +1,15 @@
 <table>
   <tr>
     <th>&nbsp;</th>
-    {% for ballot, candidates in ballots %}
+    {% for ballot in ballots %}
     <th colspan="{{candidates.count}}">{{ballot}}</th>
     {% endfor %}
   </tr>
   <tr>
     <th>Vote ID</th>
     <th>Voter</th>
-    {% for ballot, candidates in ballots %}
-      {% for candidate in candidates %}
+    {% for ballot in ballots %}
+      {% for candidate in ballot.candidates.all %}
       <th>{{candidate.get_name}}</th>
       {% endfor %}
     {% endfor %}

@@ -48,6 +48,56 @@ class Election(models.Model):
         """ Returns True if given account has voted for this election """
         return self.votes.filter(account=account).count() != 0
 
+    def get_votes_with_points(self):
+        """
+        Returns dictionary of form {
+            vote1: [points_for_candidate1, points_for_candidate2, ..],
+            vote2: [...],
+        }, where "points_for_candidate#" is 0 if the vote doesn't contain the
+        corresponding candidate and either the point value (for preferential
+        ballots) or 1 (for plurality) if so. Candidates are ordered by last
+        name followed by first name.
+        """
+        from django.db import connection
+        cursor = connection.cursor()
+        query = """
+            SELECT vote_id,
+            GROUP_CONCAT(point ORDER BY ballot_id, last_name, first_name)
+            FROM (
+                SELECT
+                    v.id AS vote_id,
+                    b.id AS ballot_id,
+                    c.last_name,
+                    c.first_name,
+                    IF(b.type = "Pl",
+                        IF(vpl.id IS NULL, 0, 1),
+                        IFNULL(SUM(vpr.point), 0)) AS point
+                FROM %(vote)s v
+                JOIN %(ballot)s b ON (b.election_id = v.election_id)
+                JOIN %(candidate)s c ON (c.ballot_id = b.id)
+                LEFT JOIN %(vote_plurality)s vpl ON (vpl.vote_id = v.id
+                    AND vpl.candidate_id = c.id)
+                LEFT JOIN %(vote_preferential)s vpr ON (vpr.vote_id = v.id
+                    AND vpr.candidate_id = c.id)
+                WHERE v.election_id = '%(id)i'
+                GROUP BY v.id, c.id
+                ORDER BY v.id, b.id
+            ) AS vote_candidates
+            GROUP BY vote_id
+        """
+        query %= {
+            'vote': Vote._meta.db_table,
+            'ballot': Ballot._meta.db_table,
+            'candidate': Candidate._meta.db_table,
+            'vote_plurality': VotePlurality._meta.db_table,
+            'vote_preferential': VotePreferential._meta.db_table,
+            'id': self.pk,
+        }
+        cursor.execute(query)
+        stats = [(Vote.objects.get(id=row[0]), row[1].split(","))
+                 for row in cursor.fetchall()]
+        return stats
+
     def disassociate_accounts(self):
         """
         Sets account = NULL for all Vote objects associated with this election.
@@ -232,22 +282,6 @@ class Vote(models.Model):
                              .order_by('candidate'))
             details.append((ballot, votes))
         return details
-
-    def get_points_for_candidates(self, candidates):
-        """
-        Given a list of candidates, constructs a list of the same length
-        wherein the candidate is replaced by 0 if vote doesn't contain the
-        candidate and the point value (or 1 in case of plurality) if so.
-        """
-        point_list = []
-        for candidate in candidates:
-            if candidate.ballot.type == "Pr":
-                vote = self.preferentials.filter(candidate=candidate)
-                point_list.append(vote and vote[0].point or 0)
-            elif candidate.ballot.type == "Pl":
-                has_voted = self.pluralities.filter(candidate=candidate)
-                point_list.append(has_voted and 1 or 0)
-        return point_list
 
 
 def _get_choices(ballot_type):

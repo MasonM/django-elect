@@ -187,12 +187,9 @@ class ModelTestCase(TestCase):
             [(ballot_plurality, [temp_votepl1]),
              (ballot_preferential, [temp_votepr1, temp_votepr2])]))
 
-        # test get_points_for_candidates method
+        # test election.get_votes_with_points method
         cand_list = [pl_candidate1]
-        self.assertEqual(temp_vote1.get_points_for_candidates(cand_list), [1])
-        cand_list = [pl_candidate1, pr_candidate1, pr_candidate2]
-        self.assertEqual(temp_vote1.get_points_for_candidates(cand_list),
-            [1, 2, 3])
-        cand_list = [pr_candidate2, pr_candidate1]
-        self.assertEqual(temp_vote1.get_points_for_candidates(cand_list),
-            [3, 2])
+        votes_points = self.election_current.get_votes_with_points()
+        self.assertEqual(len(votes_points), 1);
+        self.assertEqual(votes_points[0], temp_vote1)
+        self.assertEquals(vote_points[1], [1, 2, 3]);
