@@ -44,3 +44,7 @@ a img {
 .error_list .error_message {
   font-weight: bold;
 }
+
+li {
+  list-style-position: inside;
+}
