@@ -4,12 +4,9 @@
 <h2>Biographies for {{election}} Election Candidates</h2>
 <br/>
 {% for ballot, candidates in ballot_candidates %}
-<div class="section">
+<div class="section election-biographies">
     <h3 class="heading">{{ballot.description}}</h3>
     <div class="content">
-  {% if ballot.introduction %}
-      <p>{{ballot.introduction|safe}}</p>
-  {% endif %}
   {% for candidate in candidates %}
       <a name="{{candidate.get_name|urlencode}}"></a>
       <h4>{{candidate.get_name}}</h4>

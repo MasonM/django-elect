@@ -31,7 +31,7 @@ class CandidateRowWidget(forms.Widget):
         if self.candidate.biography:
             # make candidate's name a link to the appropriate anchor
             # on the auto-generated biographies page
-            candidate_name = '<a href="%s/#%s">%s</a>' % (
+            candidate_name = '<a target="_blank" href="%s/#%s">%s</a>' % (
                 reverse('django_elect_biographies'),
                 urlquote(candidate_name),
                 candidate_name,
@@ -289,8 +289,8 @@ class PreferentialVoteForm(BaseVoteForm):
             message = "Please rank your preferences from 1 to %i." % num
         # check that there are no duplicate points
         elif len(set(point_list)) != len(point_list) and sum(point_list) > 0:
-            message = "Please do not give the same point value to "+\
-                      "more than one candidate."
+            message = "Please do not give the same point value (other than "+\
+                      "zero) to more than one candidate."
         if message:
             raise forms.ValidationError(message)
         self.candidate_list = [(candidates.get(id=c), int(p))
