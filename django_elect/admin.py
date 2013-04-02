@@ -14,7 +14,7 @@ class ElectionAdmin(admin.ModelAdmin):
     actions_html = """
         <a href="%s">View Statistics</a> |
         <a href="%s">Generate Excel Spreadsheet</a> |
-        <a href="%s">Disassociate Accounts</a>
+        <a href="%s/">Disassociate Accounts</a>
     """
     list_display = ('name', 'vote_start', 'vote_end', 'admin_actions')
     filter_horizontal = ("allowed_voters",)
