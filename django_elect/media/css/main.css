@@ -7,8 +7,11 @@ a img {
 }
 
 .candidate-row {
-  height: 230px;
   vertical-align: middle;
+}
+
+.candidate-photo {
+  float: right;
 }
 
 .ballot {

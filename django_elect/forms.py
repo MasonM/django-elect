@@ -101,7 +101,7 @@ class BaseVoteForm(forms.Form):
             header_cols += '<col class="ballot-col-institution"/>'
             header += '<th>Institution</th>'
         if has_image:
-            row_template += '<td><img src="$image" alt="Photograph"/></td>'
+            row_template += '<td><img class="candidate-photo" src="$image" alt="Photograph"/></td>'
             header_cols += '<col class="ballot-col-image" />'
             header += '<th>Picture</th>'
         row_template += '</tr>'
