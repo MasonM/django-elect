@@ -258,11 +258,11 @@ class Vote(models.Model):
     def __unicode__(self):
         return unicode(self.account) + " - " + unicode(self.election)
 
-    def save(self, force_insert=False, force_update=False):
+    def save(self, force_insert=False, force_update=False, *args, **kwargs):
         if not self.election.voting_allowed_for_user(self.account):
             msg = 'The account %s is not allowed to vote in this election.'
             raise VotingNotAllowedException(msg % unicode(self.account))
-        super(Vote, self).save(force_insert, force_update)
+        super(Vote, self).save(force_insert, force_update, *args, **kwargs)
 
     def get_details(self):
         """
