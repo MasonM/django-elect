@@ -1,5 +1,6 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
+from django.template import RequestContext
 from django.core.urlresolvers import reverse
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
@@ -9,21 +10,6 @@ from django.utils.datastructures import SortedDict
 from django_elect.models import Election, Vote
 from django_elect.forms import PluralityVoteForm, PreferentialVoteForm
 from django_elect import settings
-
-
-# python 2.4 compatibility
-def all(iterable):
-    for element in iterable:
-        if not element:
-            return False
-    return True
-
-
-def any(iterable):
-    for element in iterable:
-        if element:
-            return True
-    return False
 
 
 def biographies(request):
@@ -85,7 +71,7 @@ def disassociate_accounts(request, id):
         "title": "Disassociate Accounts for Election %s" % election,
         "election": election,
         "success": success,
-    })
+    }, context_instance=RequestContext(request))
 
 
 @login_required
@@ -125,7 +111,7 @@ def vote(request):
         'election': election,
         'forms': forms,
         'none_selected': none_selected,
-    })
+    }, context_instance=RequestContext(request))
 
 
 def success(request):

@@ -2,7 +2,7 @@
 {% load show_errors %}
 {% block title %}{{election}} Election - Vote{% endblock %}
 {% block content %}
-<form method="post" action="index.html">
+<form method="post" action="index.html">{% csrf_token %}
   <h2>{{election}} Election</h2>
   <p>
     {{election.introduction|safe}}
