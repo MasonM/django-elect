@@ -1,6 +1,7 @@
 from django.test import TestCase
-from django.contrib.auth.models import User
+from django.db.models import get_model
 
+from django_elect import settings
 from django_elect.models import Ballot, Candidate, Election, Vote, \
     VotePlurality, VotePreferential, VotingNotAllowedException
 from django_elect.tests.utils import *
@@ -8,9 +9,10 @@ from django_elect.tests.utils import *
 
 class ModelTestCase(TestCase):
     "Tests for the election models"
-    fixtures = ['testdata.json']
-
     def setUp(self):
+        user_model = get_model(*settings.DJANGO_ELECT_USER_MODEL)
+        self.user1 = user_model.objects.create(username="user1")
+        self.user2 = user_model.objects.create(username="user2")
         self.election_current = Election.objects.create(name="current",
             introduction="Intro1", vote_start=week_ago, vote_end=tomorrow)
         self.election_finished = Election.objects.create(name="finished",
@@ -18,15 +20,7 @@ class ModelTestCase(TestCase):
         self.election_future = Election.objects.create(name="future",
             vote_start=tomorrow, vote_end=next_week)
 
-    def tearDown(self):
-        self.election_current.delete()
-        self.election_finished.delete()
-        self.election_future.delete()
-
     def test_election_model(self):
-        user1 = User.objects.get(username="user1")
-        user2 = User.objects.get(username="user2")
-
         # test __unicode__ and voting_allowed() methods
         self.assertEqual(unicode(self.election_current), u"current")
         self.assertTrue(self.election_current.voting_allowed())
@@ -38,42 +32,39 @@ class ModelTestCase(TestCase):
         self.assertFalse(self.election_future.voting_allowed())
 
         # test has_voted() and voting_allowed_for_user() methods
-        self.assertFalse(self.election_current.has_voted(user1))
-        self.assertFalse(self.election_current.has_voted(user2))
-        self.assertTrue(self.election_current.voting_allowed_for_user(user1))
-        self.assertTrue(self.election_current.voting_allowed_for_user(user2))
+        self.assertFalse(self.election_current.has_voted(self.user1))
+        self.assertFalse(self.election_current.has_voted(self.user2))
+        self.assertTrue(self.election_current.voting_allowed_for_user(self.user1))
+        self.assertTrue(self.election_current.voting_allowed_for_user(self.user2))
 
-        self.election_current.allowed_voters.add(user1)
-        self.assertTrue(self.election_current.voting_allowed_for_user(user1))
-        self.assertFalse(self.election_current.voting_allowed_for_user(user2))
+        self.election_current.allowed_voters.add(self.user1)
+        self.assertTrue(self.election_current.voting_allowed_for_user(self.user1))
+        self.assertFalse(self.election_current.voting_allowed_for_user(self.user2))
 
-        Vote.objects.create(account=user1, election=self.election_current)
-        self.assertTrue(self.election_current.has_voted(user1))
-        self.assertFalse(self.election_current.has_voted(user2))
-        self.assertFalse(self.election_current.voting_allowed_for_user(user1))
-        self.assertFalse(self.election_current.voting_allowed_for_user(user2))
+        Vote.objects.create(account=self.user1, election=self.election_current)
+        self.assertTrue(self.election_current.has_voted(self.user1))
+        self.assertFalse(self.election_current.has_voted(self.user2))
+        self.assertFalse(self.election_current.voting_allowed_for_user(self.user1))
+        self.assertFalse(self.election_current.voting_allowed_for_user(self.user2))
 
-        self.election_current.allowed_voters.add(user2)
-        self.assertTrue(self.election_current.voting_allowed_for_user(user2))
+        self.election_current.allowed_voters.add(self.user2)
+        self.assertTrue(self.election_current.voting_allowed_for_user(self.user2))
 
-        Vote.objects.create(account=user2, election=self.election_current)
-        self.assertTrue(self.election_current.has_voted(user2))
-        self.assertFalse(self.election_current.voting_allowed_for_user(user2))
+        Vote.objects.create(account=self.user2, election=self.election_current)
+        self.assertTrue(self.election_current.has_voted(self.user2))
+        self.assertFalse(self.election_current.voting_allowed_for_user(self.user2))
 
-        self.election_finished.allowed_voters.add(user1)
-        self.assertFalse(self.election_finished.voting_allowed_for_user(user1))
+        self.election_finished.allowed_voters.add(self.user1)
+        self.assertFalse(self.election_finished.voting_allowed_for_user(self.user1))
 
         # test disassociate_accounts() method
         self.assertEqual(self.election_current.votes.count(), 2)
         self.election_current.disassociate_accounts()
         self.assertEqual(self.election_current.votes.count(), 2)
-        self.assertFalse(self.election_current.has_voted(user1))
-        self.assertFalse(self.election_current.has_voted(user2))
+        self.assertFalse(self.election_current.has_voted(self.user1))
+        self.assertFalse(self.election_current.has_voted(self.user2))
 
     def test_ballot_model(self):
-        user1 = User.objects.get(username="user1")
-        user2 = User.objects.get(username="user2")
-
         # test __unicode__ and has_incumbents()
         ballot_plurality = Ballot.objects.create(description="lorem ipsum",
             election=self.election_current, type="Pl", seats_available=6)
@@ -93,10 +84,10 @@ class ModelTestCase(TestCase):
         self.assertFalse(ballot_preferential.has_incumbents())
 
         # test get_candidate_stats() with a plurality ballot
-        self.election_current.allowed_voters.add(user1, user2)
+        self.election_current.allowed_voters.add(self.user1, self.user2)
         self.assertEqual(ballot_plurality.get_candidate_stats(),
             [(pl_candidate1, 0)])
-        temp_vote1 = Vote.objects.create(account=user1,
+        temp_vote1 = Vote.objects.create(account=self.user1,
             election=self.election_current)
         VotePlurality.objects.create(vote=temp_vote1, candidate=pl_candidate1)
         self.assertEqual(ballot_plurality.get_candidate_stats(),
@@ -105,7 +96,7 @@ class ModelTestCase(TestCase):
             first_name="Reiner", last_name="Rubin", incumbent=False)
         self.assertEqual(ballot_plurality.get_candidate_stats(),
             [(pl_candidate1, 1), (pl_candidate2, 0)])
-        temp_vote2 = Vote.objects.create(account=user2,
+        temp_vote2 = Vote.objects.create(account=self.user2,
             election=self.election_current)
         VotePlurality.objects.create(vote=temp_vote2, candidate=pl_candidate1)
         self.assertEqual(ballot_plurality.get_candidate_stats(),
@@ -116,7 +107,7 @@ class ModelTestCase(TestCase):
         # test get_candidate_stats with a preferential ballot
         self.assertEqual(ballot_preferential.get_candidate_stats(),
             [(pr_candidate1, 0)])
-        temp_vote1 = Vote.objects.create(account=user1,
+        temp_vote1 = Vote.objects.create(account=self.user1,
             election=self.election_current)
         VotePreferential.objects.create(vote=temp_vote1, point=2,
             candidate=pr_candidate1)
@@ -126,7 +117,7 @@ class ModelTestCase(TestCase):
             first_name="Reiner", last_name="Rubin", incumbent=False)
         self.assertEqual(ballot_preferential.get_candidate_stats(),
             [(pr_candidate1, 2), (pr_candidate2, 0)])
-        temp_vote2 = Vote.objects.create(account=user2,
+        temp_vote2 = Vote.objects.create(account=self.user2,
             election=self.election_current)
         VotePreferential.objects.create(vote=temp_vote2, point=1,
             candidate=pr_candidate1)
@@ -149,8 +140,7 @@ class ModelTestCase(TestCase):
         self.assertEqual(candidate2.get_name(), "Hina Ichigo")
 
     def test_vote_model(self):
-        user2 = User.objects.get(username="user2")
-        self.election_current.allowed_voters.add(user2)
+        self.election_current.allowed_voters.add(self.user2)
 
         # test get_details() method
         ballot_plurality = Ballot.objects.create(description="lorem ipsum",
@@ -158,12 +148,11 @@ class ModelTestCase(TestCase):
         pl_candidate1 = Candidate.objects.create(ballot=ballot_plurality,
             first_name="Jade", last_name="Stern", incumbent=True)
 
-        user1 = User.objects.get(username="user1")
-        temp_vote1 = lambda: Vote.objects.create(account=user1,
+        temp_vote1 = lambda: Vote.objects.create(account=self.user1,
             election=self.election_current)
         # shouldn't be allowed to save a vote for someone not in allowed_voters
         self.assertRaises(VotingNotAllowedException, temp_vote1)
-        self.election_current.allowed_voters.add(user1)
+        self.election_current.allowed_voters.add(self.user1)
         temp_vote1 = temp_vote1()
         self.assertEqual(repr(temp_vote1.get_details()), repr(
             [(ballot_plurality, [])]))
