@@ -1,5 +1,6 @@
 {% extends "django_elect/base.html" %}
 {% load show_errors %}
+{% load staticfiles %}
 {% block title %}{{election}} Election - Vote{% endblock %}
 {% block content %}
 <form method="post" action="index.html">{% csrf_token %}
@@ -9,7 +10,7 @@
   </p>
   {% if none_selected %}
   <div class="notice" id="error0">
-      <img src="{{DJANGO_ELECT_MEDIA_ROOT}}/img/error.gif" alt="Error" />
+      <img src="{% static "django_elect/img/error.gif" %}" alt="Error" />
       Please select at least one candidate.
   </div>
   {% endif %}

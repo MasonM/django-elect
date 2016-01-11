@@ -17,7 +17,6 @@ def biographies(request):
     ballot_candidates = dict((b, b.candidates_with_biographies())
         for b in election.ballots.all() if b.candidates_with_biographies())
     return render_to_response('django_elect/biographies.html', {
-        'DJANGO_ELECT_MEDIA_ROOT': settings.DJANGO_ELECT_MEDIA_ROOT,
         'election': election,
         'ballot_candidates': ballot_candidates.items(),
     })
@@ -31,7 +30,6 @@ def statistics(request, id):
     """
     election = get_object_or_404(Election, pk=id)
     return render_to_response('django_elect/statistics.html', {
-        'DJANGO_ELECT_MEDIA_ROOT': settings.DJANGO_ELECT_MEDIA_ROOT,
         'title': "Election Statistics",
         'election': election,
     })
@@ -67,7 +65,6 @@ def disassociate_accounts(request, id):
         election.disassociate_accounts()
         success = True
     return render_to_response("django_elect/disassociate.html", {
-        'DJANGO_ELECT_MEDIA_ROOT': settings.DJANGO_ELECT_MEDIA_ROOT,
         "title": "Disassociate Accounts for Election %s" % election,
         "election": election,
         "success": success,
@@ -105,7 +102,6 @@ def vote(request):
             none_selected = True
 
     return render_to_response('django_elect/vote.html', {
-        'DJANGO_ELECT_MEDIA_ROOT': settings.DJANGO_ELECT_MEDIA_ROOT,
         'current_tab': 'election',
         'account': request.user,
         'election': election,
@@ -115,6 +111,4 @@ def vote(request):
 
 
 def success(request):
-    return render_to_response('django_elect/success.html', {
-        'DJANGO_ELECT_MEDIA_ROOT': settings.DJANGO_ELECT_MEDIA_ROOT,
-    })
+    return render_to_response('django_elect/success.html')

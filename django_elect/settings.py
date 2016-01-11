@@ -2,13 +2,6 @@ from django.conf import settings
 
 
 """
-This is the URL prefix for the media files used by django-elect.
-"""
-DJANGO_ELECT_MEDIA_ROOT = getattr(settings, 'DJANGO_ELECT_MEDIA_ROOT',
-    '/media')
-
-
-"""
 A tuple of the form (app_name, model) that corresponds to the model that should
 that should be used for the Election.allowed_voters and Vote.account foreign
 keys. This is mainly for sites that extend the User model via inheritance, as

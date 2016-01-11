@@ -1,6 +1,7 @@
+{% load staticfiles %}
 <div class="notice" id="error{{id}}">
     <a name="error{{id}}"></a>
-    <img src="{{DJANGO_ELECT_MEDIA_ROOT}}/img/error.gif" alt="Error"/>
+    <img src="{% static "django_elect/img/error.gif" %}" alt="Error"/>
     Please correct the errors below and try again.
     <ul class="error_list">
     {% for error_list in error_dict %}

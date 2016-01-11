@@ -1,12 +1,12 @@
 from string import Template
 
 from django import forms
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.utils.http import urlquote
 from django.utils.safestring import mark_safe
 
 from django_elect.models import Candidate, VotePlurality, VotePreferential
-from django_elect import settings
 
 
 class CandidateRowWidget(forms.Widget):
@@ -37,8 +37,8 @@ class CandidateRowWidget(forms.Widget):
                 candidate_name,
             )
         select = self.form_widget.render(name, value, attrs)
-        photo_unavailable = settings.DJANGO_ELECT_MEDIA_ROOT + \
-                            "/img/photo_unavailable.gif"
+        photo_unavailable = settings.STATIC_URL + \
+                            "django_elect/img/photo_unavailable.gif"
         return mark_safe(self.template.substitute({
             'select': select,
             'incum': self.candidate.incumbent and "*" or "",
