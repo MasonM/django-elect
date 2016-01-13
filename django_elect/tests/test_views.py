@@ -1,3 +1,6 @@
+from freezegun import freeze_time
+from datetime import datetime
+
 from django.test import TestCase
 from django.db.models import get_model
 from django.conf import settings
@@ -5,9 +8,9 @@ from django.conf import settings
 from django_elect import settings
 from django_elect.models import Ballot, Candidate, Election, Vote, \
     VotePlurality, VotePreferential
-from django_elect.tests.utils import *
 
 
+@freeze_time("2010-10-10 00:00:00")
 class VoteTestCase(TestCase):
     """
     Tests for the vote() view that don't depend on ballots
@@ -28,26 +31,33 @@ class VoteTestCase(TestCase):
         self.assertEqual(response.status_code, 404)
 
         # should get redirected if election exists but not active
-        past_election = Election.objects.create(name="finished",
-            vote_start=week_ago, vote_end=yesterday)
+        past_election = Election.objects.create(
+            name="finished",
+            vote_start=datetime(2010, 10, 1),
+            vote_end=datetime(2010, 10, 9))
         past_election.allowed_voters.add(user1)
         response = self.client.get("/election/")
         self.assertRedirects(response, settings.LOGIN_URL)
 
-        future_election = Election.objects.create(name="future",
-            vote_start=tomorrow, vote_end=next_week)
+        future_election = Election.objects.create(
+            name="future",
+            vote_start=datetime(2010, 10, 11),
+            vote_end=datetime(2010, 10, 17))
         future_election.allowed_voters.add(user1)
         response = self.client.get("/election/")
         self.assertRedirects(response, settings.LOGIN_URL)
 
         # should get redirected if election exists and is active, not voter
         # not in allowed_voters
-        current_election = Election.objects.create(name="current",
-            vote_start=week_ago, vote_end=tomorrow)
+        current_election = Election.objects.create(
+            name="current",
+            vote_start=datetime(2010, 10, 1),
+            vote_end=datetime(2010, 10, 11))
         response = self.client.get("/election/")
         self.assertRedirects(response, settings.LOGIN_URL)
 
 
+@freeze_time("2010-10-10 00:00:00")
 class BaseBallotVoteTestCase(TestCase):
     """
     Base class for testing the vote() view using specific ballots
@@ -69,8 +79,10 @@ class BaseBallotVoteTestCase(TestCase):
         self.user1 = user_model.objects.create_user(username="foo@bar.com",
             email='foo@bar.com', password="foo")
         self.client.login(username="foo@bar.com", password="foo")
-        self.election = Election.objects.create(name="current",
-            introduction="Intro1", vote_start=week_ago, vote_end=tomorrow)
+        self.election = Election.objects.create(
+            name="current",
+            vote_start=datetime(2010, 10, 1),
+            vote_end=datetime(2010, 10, 11))
         self.election.allowed_voters.add(self.user1)
 
         ballot1 = Ballot.objects.create(id=1, election=self.election,
