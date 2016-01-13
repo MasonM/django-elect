@@ -219,7 +219,7 @@ class Candidate(models.Model):
     first_name = models.CharField(max_length=255, blank=False)
     last_name = models.CharField(max_length=255, blank=False)
     institution = models.CharField(max_length=255, blank=True)
-    incumbent = models.BooleanField()
+    incumbent = models.BooleanField(default=False)
     image_url = models.URLField(max_length=255, blank=True)
     write_in = models.BooleanField(default=False)
     biography = models.TextField(blank=True,
