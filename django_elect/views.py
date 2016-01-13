@@ -5,7 +5,6 @@ from django.core.urlresolvers import reverse
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
-from django.utils.datastructures import SortedDict
 
 from django_elect.models import Election, Vote
 from django_elect.forms import PluralityVoteForm, PreferentialVoteForm
