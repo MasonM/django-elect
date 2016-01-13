@@ -28,13 +28,13 @@ class BaseTestCase(TestCase):
             last_name=last_name,
             incumbent=incumbent)
 
-    def create_current_pl_ballot(self, seats_available):
+    def create_current_pl_ballot(self, seats_available=2):
         return Ballot.objects.create(
             election=self.election_current,
             type="Pl",
             seats_available=seats_available)
 
-    def create_current_pr_ballot(self, seats_available):
+    def create_current_pr_ballot(self, seats_available=2):
         return Ballot.objects.create(
             election=self.election_current,
             type="Pr",
@@ -46,14 +46,16 @@ class ElectionTestCase(BaseTestCase):
     def test_unicode(self):
         self.assertEqual(unicode(self.election_current), u"current")
 
-    def test_voting_allowed(self):
+    def test_voting_allowed_with_current_election(self):
         self.assertTrue(self.election_current.voting_allowed())
 
+    def test_voting_allowed_with_finished_election(self):
         election_finished = Election(
             vote_start=datetime(2010, 10, 1),
             vote_end=datetime(2010, 10, 9))
         self.assertFalse(election_finished.voting_allowed())
 
+    def test_voting_allowed_with_future_election(self):
         election_future = Election(
             vote_start=datetime(2010, 10, 11),
             vote_end=datetime(2010, 10, 17))
@@ -68,24 +70,27 @@ class ElectionTestCase(BaseTestCase):
         self.assertTrue(self.election_current.has_voted(self.user1))
         self.assertFalse(self.election_current.has_voted(self.user2))
 
-    def test_voting_allowed_for_user(self):
+    def test_voting_allowed_for_user_with_empty_allowed_voters_list(self):
         self.assertTrue(self.election_current.voting_allowed_for_user(self.user1))
         self.assertTrue(self.election_current.voting_allowed_for_user(self.user2))
 
+    def test_voting_allowed_for_user_with_nonempty_allowed_voters_list(self):
         self.election_current.allowed_voters.add(self.user1)
         self.assertTrue(self.election_current.voting_allowed_for_user(self.user1))
         self.assertFalse(self.election_current.voting_allowed_for_user(self.user2))
 
+    def test_voting_allowed_for_user_who_voted_with_empty_allowed_voters_list(self):
+        self.assertTrue(self.election_current.voting_allowed_for_user(self.user1))
         Vote.objects.create(account=self.user1, election=self.election_current)
         self.assertFalse(self.election_current.voting_allowed_for_user(self.user1))
-        self.assertFalse(self.election_current.voting_allowed_for_user(self.user2))
 
-        self.election_current.allowed_voters.add(self.user2)
-        self.assertTrue(self.election_current.voting_allowed_for_user(self.user2))
+    def test_voting_allowed_for_user_who_voted_with_nonempty_allowed_voters_list(self):
+        self.election_current.allowed_voters.add(self.user1)
+        self.assertTrue(self.election_current.voting_allowed_for_user(self.user1))
+        Vote.objects.create(account=self.user1, election=self.election_current)
+        self.assertFalse(self.election_current.voting_allowed_for_user(self.user1))
 
-        Vote.objects.create(account=self.user2, election=self.election_current)
-        self.assertFalse(self.election_current.voting_allowed_for_user(self.user2))
-
+    def test_voting_allowed_for_user_with_finished_election(self):
         election_finished = Election.objects.create(
             name="finished",
             vote_start=datetime(2010, 10, 1),
@@ -131,6 +136,23 @@ class ElectionTestCase(BaseTestCase):
         self.assertEqual(votes_points[0][1], ['1', '2', '3']);
 
 
+class BallotTestCase(BaseTestCase):
+    "Tests for logic in the Ballot model that's common to both types"
+    def test_has_incumbents_with_empty_ballot(self):
+        ballot = self.create_current_pl_ballot()
+        self.assertFalse(ballot.has_incumbents())
+
+    def test_has_incumbents_with_ballot_not_having_incumbent_candidates(self):
+        ballot = self.create_current_pl_ballot()
+        candidate = self.create_candidate(ballot, incumbent=False)
+        self.assertFalse(ballot.has_incumbents())
+
+    def test_has_incumbents_with_ballot_having_incumbent_candidates(self):
+        ballot = self.create_current_pl_ballot()
+        candidate = self.create_candidate(ballot, incumbent=True)
+        self.assertTrue(ballot.has_incumbents())
+
+
 class PluralityBallotTestCase(BaseTestCase):
     "Tests for the Ballot model with type='Pl'"
     def test_unicode(self):
@@ -140,16 +162,6 @@ class PluralityBallotTestCase(BaseTestCase):
             election=self.election_current,
         )
         self.assertEqual(unicode(ballot), "Plurality current: lorem ipsum")
-
-    def test_has_incumbents(self):
-        ballot = self.create_current_pl_ballot(seats_available=6)
-        self.assertFalse(ballot.has_incumbents())
-
-        candidate = self.create_candidate(ballot, incumbent=False)
-        self.assertFalse(ballot.has_incumbents())
-
-        candidate = self.create_candidate(ballot)
-        self.assertTrue(ballot.has_incumbents())
 
     def test_get_candidate_stats(self):
         self.election_current.allowed_voters.add(self.user1, self.user2)
@@ -184,17 +196,6 @@ class PreferentialBallotTestCase(BaseTestCase):
             election=self.election_current,
         )
         self.assertEqual(unicode(ballot), "Preferential current: dolor sit")
-
-    def test_has_incumbents(self):
-        ballot_preferential = self.create_current_pr_ballot(seats_available=2)
-        self.assertFalse(ballot_preferential.has_incumbents())
-
-        pr_candidate1 = self.create_candidate(ballot_preferential,
-            incumbent=False)
-        self.assertFalse(ballot_preferential.has_incumbents())
-
-        pr_candidate1 = self.create_candidate(ballot_preferential)
-        self.assertTrue(ballot_preferential.has_incumbents())
 
     def test_get_candidate_stats(self):
         ballot_preferential = self.create_current_pr_ballot(seats_available=2)
