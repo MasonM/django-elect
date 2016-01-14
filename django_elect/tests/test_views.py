@@ -1,8 +1,8 @@
 from freezegun import freeze_time
 from datetime import datetime
 
+from django.apps import apps
 from django.test import TestCase
-from django.db.models import get_model
 from django.conf import settings
 
 from django_elect import settings
@@ -23,7 +23,7 @@ class VoteTestCase(TestCase):
         self.assertRedirects(response, settings.LOGIN_URL + "?next=/election/")
 
         # should get a 404 if no election exists
-        user_model = get_model(*settings.DJANGO_ELECT_USER_MODEL)
+        user_model = apps.get_model(settings.DJANGO_ELECT_USER_MODEL)
         user1 = user_model.objects.create_user(username="foo@bar.com",
             email='foo@bar.com', password="foo")
         self.client.login(username="foo@bar.com", password="foo")
@@ -75,7 +75,7 @@ class BaseBallotVoteTestCase(TestCase):
         First ballot is secret and has 2 seats available w/ 4 candidates.
         Second isn't secret and has 4 seats available w/ 6 candidate.
         """
-        user_model = get_model(*settings.DJANGO_ELECT_USER_MODEL)
+        user_model = apps.get_model(settings.DJANGO_ELECT_USER_MODEL)
         self.user1 = user_model.objects.create_user(username="foo@bar.com",
             email='foo@bar.com', password="foo")
         self.client.login(username="foo@bar.com", password="foo")

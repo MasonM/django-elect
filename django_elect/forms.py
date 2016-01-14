@@ -202,7 +202,7 @@ class PluralityVoteForm(BaseVoteForm):
         def render(self, value, name=None, attrs=None):
             final_attrs = self.build_attrs(attrs, type='radio',
                 value=value, name=self.name)
-            return mark_safe(u'<input%s />' % forms.util.flatatt(final_attrs))
+            return mark_safe(u'<input%s />' % forms.utils.flatatt(final_attrs))
 
         def value_from_datadict(self, data, files, name):
             value = data.get(unicode(self.name))

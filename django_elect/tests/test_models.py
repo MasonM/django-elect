@@ -2,7 +2,7 @@ from freezegun import freeze_time
 from datetime import datetime
 
 from django.test import TestCase
-from django.db.models import get_model
+from django.apps import apps
 
 from django_elect import settings
 from django_elect.models import Ballot, Candidate, Election, Vote, \
@@ -12,7 +12,7 @@ from django_elect.models import Ballot, Candidate, Election, Vote, \
 @freeze_time("2010-10-10 00:00:00")
 class BaseTestCase(TestCase):
     def setUp(self):
-        user_model = get_model(*settings.DJANGO_ELECT_USER_MODEL)
+        user_model = apps.get_model(settings.DJANGO_ELECT_USER_MODEL)
         self.user1 = user_model.objects.create(username="user1")
         self.user2 = user_model.objects.create(username="user2")
         self.election_current = Election.objects.create(

@@ -1,10 +1,11 @@
-from django.conf.urls import *
-from django.conf import settings
+from django.http import HttpResponseNotFound, HttpResponse
+from django.conf.urls import patterns, url, include
 
+
+handler404 = lambda request: HttpResponseNotFound()
 
 urlpatterns = patterns('',
-    (r'^election/', include('django_elect.urls')),
-    (r'^account/', 'django.contrib.auth.views.login', {
-        'template_name': 'admin/login.html'
-    }),
+    url(r'^account/', lambda request: HttpResponse("LOGIN")),
+    url(r'^election/', include('django_elect.urls')),
 )
+

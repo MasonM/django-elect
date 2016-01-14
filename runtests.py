@@ -4,6 +4,7 @@ import os
 from os.path import dirname, abspath
 from optparse import OptionParser
 
+import django
 from django.conf import settings
 
 if not settings.configured and not os.environ.get('DJANGO_SETTINGS_MODULE'):
@@ -26,6 +27,12 @@ if not settings.configured and not os.environ.get('DJANGO_SETTINGS_MODULE'):
 
             'django_elect',
         ],
+        MIDDLEWARE_CLASSES = (
+            'django.middleware.common.CommonMiddleware',
+            'django.contrib.sessions.middleware.SessionMiddleware',
+            'django.middleware.csrf.CsrfViewMiddleware',
+            'django.contrib.auth.middleware.AuthenticationMiddleware',
+        ),
         SERIALIZATION_MODULES = {},
         STATIC_URL = '/static/',
         LOGIN_URL = '/account/',
@@ -40,6 +47,7 @@ from django.test.runner import DiscoverRunner
 def runtests(options):
     parent = dirname(abspath(__file__))
     sys.path.insert(0, parent)
+    django.setup()
     setup_test_environment()
     test_runner = DiscoverRunner(**options)
     failures = test_runner.run_tests(['django_elect'])
