@@ -26,7 +26,7 @@ class ShowErrorsNode(template.Node):
             context['errorNum'] = 0
         error_id = context['errorNum']
         context['errorNum'] += 1
-        forms = map(lambda f: template.resolve_variable(f, context),
+        forms = map(lambda f: template.Variable(f).resolve(context),
                     self.forms)
         try:
             error_dicts = map(lambda f: f.errors, forms)
