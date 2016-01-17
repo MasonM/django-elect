@@ -3,12 +3,12 @@ from __future__ import unicode_literals
 
 from django.db import migrations, models
 
+from django_elect import settings
+
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('accounts', '0002_auto_20160116_2345'),
-    ]
+    dependencies = settings.DJANGO_ELECT_MIGRATION_DEPENDENCIES
 
     operations = [
         migrations.CreateModel(
@@ -52,7 +52,7 @@ class Migration(migrations.Migration):
                 ('introduction', models.TextField(help_text=b'This is printed at the top of the voting page below the header. Enter the text as HTML.', blank=True)),
                 ('vote_start', models.DateTimeField(help_text=b'Start of voting')),
                 ('vote_end', models.DateTimeField(help_text=b'End of voting')),
-                ('allowed_voters', models.ManyToManyField(help_text=b'If empty, all registered users will be allowed to vote.', to='accounts.Account', blank=True)),
+                ('allowed_voters', models.ManyToManyField(help_text=b'If empty, all registered users will be allowed to vote.', to=settings.DJANGO_ELECT_USER_MODEL, blank=True)),
             ],
             options={
                 'ordering': ['vote_start'],
@@ -63,7 +63,7 @@ class Migration(migrations.Migration):
             name='Vote',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('account', models.ForeignKey(to='accounts.Account', null=True)),
+                ('account', models.ForeignKey(to=settings.DJANGO_ELECT_USER_MODEL, null=True)),
                 ('election', models.ForeignKey(related_name='votes', to='django_elect.Election')),
             ],
         ),

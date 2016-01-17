@@ -12,6 +12,13 @@ DJANGO_ELECT_USER_MODEL = getattr(settings,
 
 
 """
+List of tuples to pass to Migration.depedencies for django_elect migrations
+"""
+DJANGO_ELECT_MIGRATION_DEPENDENCIES = getattr(settings,
+    'DJANGO_ELECT_MIGRATION_DEPENDENCIES', [('auth', '0001_initial')])
+
+
+"""
 URL to redirect voters to who are not logged in.
 """
 LOGIN_URL = getattr(settings, 'LOGIN_URL', '/account/')
