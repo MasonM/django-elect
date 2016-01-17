@@ -44,7 +44,7 @@ if not settings.configured and not os.environ.get('DJANGO_SETTINGS_MODULE'):
 from django.test.utils import setup_test_environment
 from django.test.runner import DiscoverRunner
 
-def runtests(options):
+def runtests(options={}):
     parent = dirname(abspath(__file__))
     sys.path.insert(0, parent)
     django.setup()
