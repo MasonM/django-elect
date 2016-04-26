@@ -13,8 +13,10 @@ from django_elect.models import Ballot, Candidate, Election, Vote, \
 class BaseTestCase(TestCase):
     def setUp(self):
         user_model = apps.get_model(settings.DJANGO_ELECT_USER_MODEL)
-        self.user1 = user_model.objects.create(username="user1")
-        self.user2 = user_model.objects.create(username="user2")
+        self.user1 = user_model.objects.create_user(username="user1",
+            email="user1@foo.com")
+        self.user2 = user_model.objects.create_user(username="user2",
+            email="user2@foo.com")
         self.election_current = Election.objects.create(
             name="current",
             introduction="Intro1",
