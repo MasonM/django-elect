@@ -248,9 +248,7 @@ class Vote(models.Model):
     an election.
     """
     account = models.ForeignKey(settings.DJANGO_ELECT_USER_MODEL, null=True)
-    election = models.ForeignKey(Election, related_name="votes",
-        limit_choices_to=Q(vote_start__lte=datetime.now()) &\
-                         Q(vote_end__gte=datetime.now()))
+    election = models.ForeignKey(Election, related_name="votes")
 
     def __unicode__(self):
         return unicode(self.account) + " - " + unicode(self.election)
