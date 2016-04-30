@@ -100,6 +100,17 @@ class ElectionTestCase(BaseTestCase):
         election_finished.allowed_voters.add(self.user1)
         self.assertFalse(election_finished.voting_allowed_for_user(self.user1))
 
+    def test_create_vote_for_user_not_allowed(self):
+        self.election_current.allowed_voters.add(self.user2)
+        create_vote = lambda: self.election_current.create_vote(self.user1)
+        # shouldn't be allowed to save a vote for someone not in allowed_voters
+        self.assertRaises(VotingNotAllowedException, create_vote)
+
+    def test_create_vote_success(self):
+        vote = self.election_current.create_vote(self.user1)
+        self.assertEqual(vote.account, self.user1)
+        self.assertEqual(vote.election, self.election_current)
+
     def test_disassociate_accounts(self):
         Vote.objects.create(account=self.user1, election=self.election_current)
         Vote.objects.create(account=self.user2, election=self.election_current)
@@ -257,12 +268,12 @@ class CandidateTestCase(BaseTestCase):
 
 class VoteTestCase(BaseTestCase):
     "Tests for the Vote model"
-    def test_user_not_allowed_error_handling(self):
-        self.election_current.allowed_voters.add(self.user2)
-        temp_vote1 = lambda: Vote.objects.create(account=self.user1,
+    def test_unicode(self):
+        vote1 = Vote.objects.create(account=self.user1,
             election=self.election_current)
-        # shouldn't be allowed to save a vote for someone not in allowed_voters
-        self.assertRaises(VotingNotAllowedException, temp_vote1)
+        self.user1.first_name = 'foo'
+        self.user1.last_name = 'bar'
+        self.assertEqual(unicode(vote1), "bar, foo  <user1@foo.com> - current")
 
     def test_get_details(self):
         ballot_plurality = self.create_current_pl_ballot(seats_available=6)

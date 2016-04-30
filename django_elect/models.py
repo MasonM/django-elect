@@ -6,6 +6,10 @@ from django.db.models import Q
 from django_elect import settings
 
 
+class VotingNotAllowedException(Exception):
+    pass
+
+
 class Election(models.Model):
     """
     Represents elections. which can be composed of one or more ballots.
@@ -40,6 +44,16 @@ class Election(models.Model):
         Returns True if now is between vote_start and vote_end, inclusive.
         """
         return self.vote_start <= datetime.now() <= self.vote_end
+
+    def create_vote(self, user):
+        """
+        Checks that the given account can vote in this election, and if so,
+        creates and returns a Vote object.
+        """
+        if not self.voting_allowed_for_user(user):
+            msg = 'The account %s is not allowed to vote in this election.'
+            raise VotingNotAllowedException(msg % unicode(user))
+        return self.votes.create(account=user, election=self)
 
     def has_voted(self, account):
         """ Returns True if given account has voted for this election """
@@ -238,10 +252,6 @@ class Candidate(models.Model):
         ordering = ['last_name', 'first_name']
 
 
-class VotingNotAllowedException(Exception):
-    pass
-
-
 class Vote(models.Model):
     """
     Vote associates individual candidate selections with an account and
@@ -252,12 +262,6 @@ class Vote(models.Model):
 
     def __unicode__(self):
         return unicode(self.account) + " - " + unicode(self.election)
-
-    def save(self, force_insert=False, force_update=False, *args, **kwargs):
-        if not self.election.voting_allowed_for_user(self.account):
-            msg = 'The account %s is not allowed to vote in this election.'
-            raise VotingNotAllowedException(msg % unicode(self.account))
-        super(Vote, self).save(force_insert, force_update, *args, **kwargs)
 
     def get_details(self):
         """

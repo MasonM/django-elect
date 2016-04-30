@@ -123,8 +123,8 @@ class BaseVoteForm(forms.Form):
 
     def _do_save(self, vote):
         """
-        Only applicable to non-secret ballots. Must be implemented by
-        sub-classes to do the actual saving.
+        Must be implemented by sub-classes to save VotePreferential and
+        VotePlurality objects
         """
         raise NotImplementedError
 
