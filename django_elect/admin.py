@@ -93,4 +93,7 @@ class VoteAdmin(admin.ModelAdmin):
     list_filter = ['election']
     search_fields = ['account__first_name', 'account__last_name']
     inlines = [VotePreferentialInline, VotePluralityInline]
+
+    class Media:
+        js = ('django_elect/js/admin.js',)
 admin.site.register(Vote, VoteAdmin)
