@@ -20,6 +20,7 @@ setup(name='django-elect',
     test_suite='runtests.runtests',
     install_requires=[
         'django>=1.8,<1.9',
+        'django-autocomplete-light>=3.0',
         'setuptools',
     ],
     zip_safe=False,

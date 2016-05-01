@@ -1,6 +1,6 @@
 from django.conf.urls import patterns, url
 
-from django_elect import views
+from django_elect import views, autocomplete
 
 
 urlpatterns = patterns('',
@@ -12,5 +12,11 @@ urlpatterns = patterns('',
         name="django_elect_spreadsheet"),
     url(r'^disassociate/(?P<id>\d+)', views.disassociate_accounts,
         name="django_elect_disassociate"),
+    url(r'^vote-plurality-autocomplete/$',
+        autocomplete.CandidateAutocomplete.as_view(ballot_type="Pl"),
+        name='vote-plurality-autocomplete'),
+    url(r'^vote-preferential-autocomplete/$',
+        autocomplete.CandidateAutocomplete.as_view(ballot_type="Pr"),
+        name='vote-preferential-autocomplete'),
     url(r'', views.vote, name="django_elect_vote"),
 )

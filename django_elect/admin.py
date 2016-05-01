@@ -1,6 +1,9 @@
 from django.core.urlresolvers import reverse
 from django.contrib import admin
 from django.http import HttpResponseRedirect
+from django import forms
+
+from dal import autocomplete
 
 from django_elect.models import Election, Ballot, Vote, Candidate, \
     VotePreferential, VotePlurality
@@ -10,6 +13,8 @@ from django_elect import settings
 class BallotInline(admin.StackedInline):
     model = Ballot
     extra = 3
+
+
 class ElectionAdmin(admin.ModelAdmin):
     actions_html = """
         <a href="%s">View Statistics</a> |
@@ -45,16 +50,44 @@ admin.site.register(Election, ElectionAdmin)
 class CandidateInline(admin.StackedInline):
     model = Candidate
     extra = 5
+
+
 class BallotAdmin(admin.ModelAdmin):
     list_display = ("election", "description", "type")
     inlines = [CandidateInline]
 admin.site.register(Ballot, BallotAdmin)
 
 
+class AdminVotePreferentialForm(forms.ModelForm):
+    class Meta:
+        model = VotePreferential
+        fields = '__all__'
+        widgets = {
+            'candidate': autocomplete.ModelSelect2(forward=['election'],
+                url='vote-preferential-autocomplete')
+        }
+
+
 class VotePreferentialInline(admin.TabularInline):
     model = VotePreferential
+    form = AdminVotePreferentialForm
+
+
+class AdminVotePluralityForm(forms.ModelForm):
+    class Meta:
+        model = VotePlurality
+        fields = '__all__'
+        widgets = {
+            'candidate': autocomplete.ModelSelect2(forward=['election'],
+                url='vote-plurality-autocomplete')
+        }
+
+
 class VotePluralityInline(admin.TabularInline):
     model = VotePlurality
+    form = AdminVotePluralityForm
+
+
 class VoteAdmin(admin.ModelAdmin):
     list_display = ('election', 'account')
     list_filter = ['election']
