@@ -273,7 +273,7 @@ class VoteTestCase(BaseTestCase):
             election=self.election_current)
         self.user1.first_name = 'foo'
         self.user1.last_name = 'bar'
-        self.assertEqual(unicode(vote1), "bar, foo  <user1@foo.com> - current")
+        self.assertEqual(unicode(vote1), "%s - current" % unicode(self.user1))
 
     def test_get_details(self):
         ballot_plurality = self.create_current_pl_ballot(seats_available=6)
