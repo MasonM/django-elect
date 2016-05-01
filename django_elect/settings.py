@@ -1,4 +1,6 @@
 from django.conf import settings
+from django.db.models.functions import Concat
+from django.db.models import Value as V
 
 
 """
@@ -9,6 +11,17 @@ http://scottbarnham.com/blog/2008/08/21/extending-the-django-user-model-with-inh
 """
 DJANGO_ELECT_USER_MODEL = getattr(settings,
     'DJANGO_ELECT_USER_MODEL', settings.AUTH_USER_MODEL)
+
+
+"""
+Function to filter a queryset on the user model with a free-form query.
+Used by django_elect.autocomplete.AccountAutocomplete.
+"""
+DJANGO_ELECT_USER_AUTOCOMPLETE_FILTER = getattr(settings,
+    'DJANGO_ELECT_USER_AUTOCOMPLETE_FILTER',
+    lambda queryset, query: queryset.annotate(
+        full_name=Concat('first_name', V(' '), 'last_name')
+    ).filter(full_name__icontains=query))
 
 
 """

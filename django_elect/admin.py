@@ -88,7 +88,17 @@ class VotePluralityInline(admin.TabularInline):
     form = AdminVotePluralityForm
 
 
+class AdminVoteForm(forms.ModelForm):
+    class Meta:
+        model = Vote
+        fields = '__all__'
+        widgets = {
+            'account': autocomplete.ModelSelect2(url='account-autocomplete'),
+        }
+
+
 class VoteAdmin(admin.ModelAdmin):
+    form = AdminVoteForm
     list_display = ('election', 'account')
     list_filter = ['election']
     search_fields = ['account__first_name', 'account__last_name']

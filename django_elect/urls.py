@@ -18,5 +18,8 @@ urlpatterns = patterns('',
     url(r'^vote-preferential-autocomplete/$',
         autocomplete.CandidateAutocomplete.as_view(ballot_type="Pr"),
         name='vote-preferential-autocomplete'),
+    url(r'^account-autocomplete/$',
+        autocomplete.AccountAutocomplete.as_view(),
+        name='account-autocomplete'),
     url(r'', views.vote, name="django_elect_vote"),
 )
