@@ -18,6 +18,9 @@ if not settings.configured and not os.environ.get('DJANGO_SETTINGS_MODULE'):
             }
         },
         INSTALLED_APPS = [
+            'dal',
+            'dal_select2',
+
             'django.contrib.auth',
             'django.contrib.admin',
             'django.contrib.contenttypes',
