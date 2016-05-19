@@ -85,21 +85,18 @@ class BaseBallotVoteTestCase(TestCase):
             vote_end=datetime(2010, 10, 11))
         self.election.allowed_voters.add(self.user1)
 
-        ballot1 = Ballot.objects.create(id=1, election=self.election,
-            type=self.ballot_type, seats_available=2, is_secret=True,
-            write_in_available=True, introduction="something something")
+        ballot1 = self.election.ballots.create(id=1, type=self.ballot_type,
+            seats_available=2, is_secret=True, write_in_available=True,
+            introduction="something something")
         for i in range(1, 5):
-            Candidate.objects.create(id=Candidate.objects.count() + 1,
-                ballot=ballot1, first_name="Ballot 1",
-                last_name="Candidate %i" % i)
+            ballot1.candidates.create(id=Candidate.objects.count() + 1,
+                first_name="Ballot 1", last_name="Candidate %i" % i)
 
-        ballot2 = Ballot.objects.create(id=2, election=self.election,
-            type=self.ballot_type, seats_available=4, is_secret=False,
-            write_in_available=False)
+        ballot2 = self.election.ballots.create(id=2, type=self.ballot_type,
+            seats_available=4, is_secret=False, write_in_available=False)
         for i in range(1, 7):
-            Candidate.objects.create(id=Candidate.objects.count() + 1,
-                ballot=ballot2, first_name="Ballot 2",
-                last_name="Candidate %i" % i)
+            ballot2.candidates.create(id=Candidate.objects.count() + 1,
+                first_name="Ballot 2", last_name="Candidate %i" % i)
 
     def test_generic(self):
         """
@@ -143,21 +140,17 @@ class PluralityVoteTestCase(BaseBallotVoteTestCase):
         with write-in and one without, to test radio widget functionality.
         """
         super(PluralityVoteTestCase, self).setUp()
-        ballot3 = Ballot.objects.create(id=3, election=self.election,
-            type=self.ballot_type, seats_available=1, is_secret=False,
-            write_in_available=False)
+        ballot3 = self.election.ballots.create(id=3, type=self.ballot_type,
+            seats_available=1, is_secret=False, write_in_available=False)
         for i in range(1, 3):
-            Candidate.objects.create(id=Candidate.objects.count() + 1,
-                ballot=ballot3, first_name="Ballot 3",
-                last_name="Candidate %i" % i)
+            ballot3.candidates.create(id=Candidate.objects.count() + 1,
+                first_name="Ballot 3", last_name="Candidate %i" % i)
 
-        ballot4 = Ballot.objects.create(id=4, election=self.election,
-            type=self.ballot_type, seats_available=1, is_secret=False,
-            write_in_available=True)
+        ballot4 = self.election.ballots.create(id=4, type=self.ballot_type,
+            seats_available=1, is_secret=False, write_in_available=True)
         for i in range(1, 3):
-            Candidate.objects.create(id=Candidate.objects.count() + 1,
-                ballot=ballot4, first_name="Ballot 4",
-                last_name="Candidate %i" % i)
+            ballot4.candidates.create(id=Candidate.objects.count() + 1,
+                first_name="Ballot 4", last_name="Candidate %i" % i)
 
     def test_excessive_selections(self):
         # shouldn't be allowed to submit a vote for more candidates than

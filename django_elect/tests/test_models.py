@@ -24,21 +24,18 @@ class BaseTestCase(TestCase):
             vote_end=datetime(2010, 10, 11))
 
     def create_candidate(self, ballot, incumbent=True, last_name='bar'):
-        return Candidate.objects.create(
-            ballot=ballot,
+        return ballot.candidates.create(
             first_name="foo",
             last_name=last_name,
             incumbent=incumbent)
 
     def create_current_pl_ballot(self, seats_available=2):
-        return Ballot.objects.create(
-            election=self.election_current,
+        return self.election_current.ballots.create(
             type="Pl",
             seats_available=seats_available)
 
     def create_current_pr_ballot(self, seats_available=2):
-        return Ballot.objects.create(
-            election=self.election_current,
+        return self.election_current.ballots.create(
             type="Pr",
             seats_available=seats_available)
 
@@ -68,7 +65,7 @@ class ElectionTestCase(BaseTestCase):
 
     def test_has_voted_with_user_who_already_voted(self):
         self.election_current.allowed_voters.add(self.user1)
-        Vote.objects.create(account=self.user1, election=self.election_current)
+        self.election_current.votes.create(account=self.user1)
         self.assertTrue(self.election_current.has_voted(self.user1))
         self.assertFalse(self.election_current.has_voted(self.user2))
 
@@ -83,13 +80,15 @@ class ElectionTestCase(BaseTestCase):
 
     def test_voting_allowed_for_user_who_voted_with_empty_allowed_voters_list(self):
         self.assertTrue(self.election_current.voting_allowed_for_user(self.user1))
-        Vote.objects.create(account=self.user1, election=self.election_current)
+
+        self.election_current.votes.create(account=self.user1)
         self.assertFalse(self.election_current.voting_allowed_for_user(self.user1))
 
     def test_voting_allowed_for_user_who_voted_with_nonempty_allowed_voters_list(self):
         self.election_current.allowed_voters.add(self.user1)
         self.assertTrue(self.election_current.voting_allowed_for_user(self.user1))
-        Vote.objects.create(account=self.user1, election=self.election_current)
+
+        self.election_current.votes.create(account=self.user1)
         self.assertFalse(self.election_current.voting_allowed_for_user(self.user1))
 
     def test_voting_allowed_for_user_with_finished_election(self):
@@ -112,8 +111,8 @@ class ElectionTestCase(BaseTestCase):
         self.assertEqual(vote.election, self.election_current)
 
     def test_disassociate_accounts(self):
-        Vote.objects.create(account=self.user1, election=self.election_current)
-        Vote.objects.create(account=self.user2, election=self.election_current)
+        self.election_current.votes.create(account=self.user1)
+        self.election_current.votes.create(account=self.user2)
         self.assertEqual(self.election_current.votes.count(), 2)
 
         self.election_current.disassociate_accounts()
@@ -128,10 +127,8 @@ class ElectionTestCase(BaseTestCase):
         pl_candidate3 = self.create_candidate(ballot_plurality)
 
         ballot_preferential = self.create_current_pr_ballot(seats_available=2)
-        pr_candidate1 = self.create_candidate(ballot_preferential,
-            last_name='AAA')
-        pr_candidate2 = self.create_candidate(ballot_preferential,
-            last_name='ZZZ')
+        pr_candidate1 = self.create_candidate(ballot_preferential)
+        pr_candidate2 = self.create_candidate(ballot_preferential)
 
         vote1 = self.election_current.votes.create(account=self.user1)
         vote1.pluralities.create(candidate=pl_candidate1)
@@ -195,19 +192,16 @@ class PluralityBallotTestCase(BaseTestCase):
         pl_candidate1 = self.create_candidate(ballot)
         self.assertEqual(ballot.get_candidate_stats(), [(pl_candidate1, 0)])
 
-        temp_vote1 = Vote.objects.create(
-            account=self.user1,
-            election=self.election_current)
-        VotePlurality.objects.create(vote=temp_vote1, candidate=pl_candidate1)
+        vote1 = self.election_current.votes.create(account=self.user1)
+        vote1.pluralities.create(candidate=pl_candidate1)
         self.assertEqual(ballot.get_candidate_stats(), [(pl_candidate1, 1)])
 
         pl_candidate2 = self.create_candidate(ballot)
         self.assertEqual(ballot.get_candidate_stats(),
             [(pl_candidate1, 1), (pl_candidate2, 0)])
 
-        temp_vote2 = Vote.objects.create(account=self.user2,
-            election=self.election_current)
-        VotePlurality.objects.create(vote=temp_vote2, candidate=pl_candidate1)
+        vote2 = self.election_current.votes.create(account=self.user2)
+        vote1.pluralities.create(candidate=pl_candidate1)
         self.assertEqual(ballot.get_candidate_stats(),
             [(pl_candidate1, 2), (pl_candidate2, 0)])
 
@@ -230,10 +224,8 @@ class PreferentialBallotTestCase(BaseTestCase):
         self.assertEqual(ballot_preferential.get_candidate_stats(),
             [(pr_candidate1, 0)])
 
-        temp_vote1 = Vote.objects.create(account=self.user1,
-            election=self.election_current)
-        VotePreferential.objects.create(vote=temp_vote1, point=2,
-            candidate=pr_candidate1)
+        vote1 = self.election_current.votes.create(account=self.user1)
+        vote1.preferentials.create(point=2, candidate=pr_candidate1)
         self.assertEqual(ballot_preferential.get_candidate_stats(),
             [(pr_candidate1, 2)])
 
@@ -241,12 +233,9 @@ class PreferentialBallotTestCase(BaseTestCase):
         self.assertEqual(ballot_preferential.get_candidate_stats(),
             [(pr_candidate1, 2), (pr_candidate2, 0)])
 
-        temp_vote2 = Vote.objects.create(account=self.user2,
-            election=self.election_current)
-        VotePreferential.objects.create(vote=temp_vote2, point=1,
-            candidate=pr_candidate1)
-        VotePreferential.objects.create(vote=temp_vote2, point=2,
-            candidate=pr_candidate2)
+        vote2 = self.election_current.votes.create(account=self.user2)
+        vote2.preferentials.create(point=1, candidate=pr_candidate1)
+        vote2.preferentials.create(point=2, candidate=pr_candidate2)
         self.assertEqual(ballot_preferential.get_candidate_stats(),
             [(pr_candidate1, 3), (pr_candidate2, 2)])
 
@@ -281,8 +270,7 @@ class CandidateTestCase(BaseTestCase):
 class VoteTestCase(BaseTestCase):
     "Tests for the Vote model"
     def test_unicode(self):
-        vote1 = Vote.objects.create(account=self.user1,
-            election=self.election_current)
+        vote1 = self.election_current.votes.create(account=self.user1)
         self.user1.first_name = 'foo'
         self.user1.last_name = 'bar'
         self.assertEqual(unicode(vote1), "%s - current" % unicode(self.user1))
@@ -292,25 +280,21 @@ class VoteTestCase(BaseTestCase):
         pl_candidate1 = self.create_candidate(ballot_plurality)
 
         self.election_current.allowed_voters.add(self.user1)
-        temp_vote1 = Vote.objects.create(account=self.user1,
-            election=self.election_current)
-        self.assertEqual(repr(temp_vote1.get_details()), repr(
+        vote = self.election_current.votes.create(account=self.user1)
+        self.assertEqual(repr(vote.get_details()), repr(
             [(ballot_plurality, [])]))
 
         ballot_preferential = self.create_current_pr_ballot(seats_available=2)
         pr_candidate1 = self.create_candidate(ballot_preferential)
         pr_candidate2 = self.create_candidate(ballot_preferential)
 
-        temp_votepl1 = VotePlurality.objects.create(vote=temp_vote1,
-            candidate=pl_candidate1)
-        self.assertEqual(repr(temp_vote1.get_details()), repr(
-            [(ballot_plurality, [temp_votepl1]),
+        vote_pl1 = vote.pluralities.create(candidate=pl_candidate1)
+        self.assertEqual(repr(vote.get_details()), repr(
+            [(ballot_plurality, [vote_pl1]),
              (ballot_preferential, [])]))
 
-        temp_votepr1 = VotePreferential.objects.create(vote=temp_vote1,
-            candidate=pr_candidate1, point=2)
-        temp_votepr2 = VotePreferential.objects.create(vote=temp_vote1,
-            candidate=pr_candidate2, point=3)
-        self.assertEqual(repr(temp_vote1.get_details()), repr(
-            [(ballot_plurality, [temp_votepl1]),
-             (ballot_preferential, [temp_votepr1, temp_votepr2])]))
+        vote_pr1 = vote.preferentials.create(candidate=pr_candidate1, point=2)
+        vote_pr2 = vote.preferentials.create(candidate=pr_candidate2, point=3)
+        self.assertEqual(repr(vote.get_details()), repr(
+            [(ballot_plurality, [vote_pl1]),
+             (ballot_preferential, [vote_pr1, vote_pr2])]))
