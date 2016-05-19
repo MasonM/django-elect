@@ -121,10 +121,11 @@ class ElectionTestCase(BaseTestCase):
         self.assertFalse(self.election_current.has_voted(self.user1))
         self.assertFalse(self.election_current.has_voted(self.user2))
 
-    def test_get_votes_with_points(self):
-        self.election_current.allowed_voters.add(self.user1)
+    def test_full_statistics(self):
         ballot_plurality = self.create_current_pl_ballot(seats_available=6)
         pl_candidate1 = self.create_candidate(ballot_plurality)
+        pl_candidate2 = self.create_candidate(ballot_plurality)
+        pl_candidate3 = self.create_candidate(ballot_plurality)
 
         ballot_preferential = self.create_current_pr_ballot(seats_available=2)
         pr_candidate1 = self.create_candidate(ballot_preferential,
@@ -132,21 +133,32 @@ class ElectionTestCase(BaseTestCase):
         pr_candidate2 = self.create_candidate(ballot_preferential,
             last_name='ZZZ')
 
-        temp_vote1 = Vote.objects.create(
-            account=self.user1,
-            election=self.election_current)
-        temp_votepl1 = VotePlurality.objects.create(
-            vote=temp_vote1,
-            candidate=pl_candidate1)
-        temp_votepr1 = VotePreferential.objects.create(vote=temp_vote1,
-            candidate=pr_candidate1, point=2)
-        temp_votepr2 = VotePreferential.objects.create(vote=temp_vote1,
-            candidate=pr_candidate2, point=3)
+        vote1 = self.election_current.votes.create(account=self.user1)
+        vote1.pluralities.create(candidate=pl_candidate1)
+        vote1.preferentials.create(candidate=pr_candidate1, point=2)
+        vote1.preferentials.create(candidate=pr_candidate2, point=3)
 
-        votes_points = self.election_current.get_votes_with_points()
-        self.assertEqual(len(votes_points), 1);
-        self.assertEqual(votes_points[0][0], temp_vote1)
-        self.assertEqual(votes_points[0][1], ['1', '2', '3']);
+        stats = self.election_current.get_full_statistics()
+        expected_candidates = [pl_candidate1, pl_candidate2, pl_candidate3,
+            pr_candidate1, pr_candidate2]
+        expected_ballots = [ballot_plurality, ballot_preferential]
+        expected_votes = { vote1: [1, 0, 0, 2, 3] }
+        self.assertEqual(expected_candidates, stats['candidates'])
+        self.assertEqual(expected_ballots, stats['ballots'])
+        self.assertEqual(expected_votes, stats['votes'])
+
+        # Add another vote
+        vote2 = self.election_current.votes.create(account=self.user1)
+        vote2.pluralities.create(candidate=pl_candidate3)
+        vote2.pluralities.create(candidate=pl_candidate2)
+        vote2.preferentials.create(candidate=pr_candidate1, point=3)
+
+        stats = self.election_current.get_full_statistics()
+        expected_votes[vote2] = [0, 1, 1, 3, 0]
+        # candidates and ballots should be unchanged and in same order
+        self.assertEqual(expected_candidates, stats['candidates'])
+        self.assertEqual(expected_ballots, stats['ballots'])
+        self.assertEqual(expected_votes, stats['votes'])
 
 
 class BallotTestCase(BaseTestCase):

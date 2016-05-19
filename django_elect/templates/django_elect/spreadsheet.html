@@ -1,24 +1,22 @@
 <table>
   <tr>
     <th colspan="2">&nbsp;</th>
-    {% for ballot in ballots %}
+    {% for ballot in full_stats.ballots %}
     <th colspan="{{ballot.candidates.all.count}}">{{ballot}}</th>
     {% endfor %}
   </tr>
   <tr>
     <th>Vote ID</th>
     <th>Voter</th>
-    {% for ballot in ballots %}
-      {% for candidate in ballot.candidates.all %}
+    {% for candidate in full_stats.candidates %}
       <th>{{candidate.get_name}}</th>
-      {% endfor %}
     {% endfor %}
   </tr>
-  {% for vote, point_list in votes %}
+  {% for vote, points in full_stats.votes.items %}
   <tr>
     <td>{{vote.id}}</td>
     <td>{{vote.account}}</td>
-    {% for point in point_list %}
+    {% for point in points %}
     <td>{{point}}</td>
     {% endfor %}
   </tr>

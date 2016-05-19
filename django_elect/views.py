@@ -40,11 +40,8 @@ def generate_spreadsheet(request, id):
     Generates an Excel spreadsheet for review by a staff member.
     """
     election = get_object_or_404(Election, pk=id)
-    ballots = election.ballots.all()
-    votes = election.get_votes_with_points()
     response = render_to_response("django_elect/spreadsheet.html", {
-        'ballots': ballots,
-        'votes': votes,
+        'full_stats': election.get_full_statistics(),
     })
     filename = "election%s.xls" % (election.pk)
     response['Content-Disposition'] = 'attachment; filename='+filename

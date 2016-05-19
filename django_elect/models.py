@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from django.http import Http404
-from django.db import models
+from django.db import models, connection
 from django.db.models import Q
 from django_elect import settings
 
@@ -59,42 +59,41 @@ class Election(models.Model):
         """ Returns True if given account has voted for this election """
         return self.votes.filter(account=account).count() != 0
 
-    def get_votes_with_points(self):
+    def get_full_statistics(self):
         """
-        Returns dictionary of form {
-            vote1: [points_for_candidate1, points_for_candidate2, ..],
-            vote2: [...],
-        }, where "points_for_candidate#" is 0 if the vote doesn't contain the
+        Returns dictionary of the following form:
+        {
+            "candidates": [ Candidate#1, Candidate#2, ... ],
+            "ballots": [ Ballot#1, Ballot#2, ... ],
+            "votes": {
+                Vote#1: [ points_for_candidate1, points_for_candidate2, ... ],
+                Vote#2: [...],
+            },
+        }
+        Where "points_for_candidate#" is 0 if the vote doesn't contain the
         corresponding candidate and either the point value (for preferential
-        ballots) or 1 (for plurality) if so. Candidates are ordered by last
-        name followed by first name.
+        ballots) or 1 (for plurality) if so. Candidates are ordered by ballot
+        ID and then by candidate id.
         """
-        from django.db import connection
-        cursor = connection.cursor()
         query = """
-            SELECT vote_id,
-            GROUP_CONCAT(point ORDER BY ballot_id, last_name, first_name)
-            FROM (
-                SELECT
-                    v.id AS vote_id,
-                    b.id AS ballot_id,
-                    c.last_name,
-                    c.first_name,
-                    IF(b.type = "Pl",
-                        IF(vpl.id IS NULL, 0, 1),
-                        IFNULL(SUM(vpr.point), 0)) AS point
-                FROM %(vote)s v
-                JOIN %(ballot)s b ON (b.election_id = v.election_id)
-                JOIN %(candidate)s c ON (c.ballot_id = b.id)
-                LEFT JOIN %(vote_plurality)s vpl ON (vpl.vote_id = v.id
-                    AND vpl.candidate_id = c.id)
-                LEFT JOIN %(vote_preferential)s vpr ON (vpr.vote_id = v.id
-                    AND vpr.candidate_id = c.id)
-                WHERE v.election_id = '%(id)i'
-                GROUP BY v.id, c.id
-                ORDER BY v.id, b.id
-            ) AS vote_candidates
-            GROUP BY vote_id
+            SELECT
+                v.id AS vote_id,
+                c.id AS candidate_id,
+                IF(
+                    b.type = "Pl",
+                    IF(vpl.id IS NULL, 0, 1),
+                    IFNULL(SUM(vpr.point), 0)
+                ) AS point
+            FROM %(vote)s v
+            JOIN %(ballot)s b ON (b.election_id = v.election_id)
+            JOIN %(candidate)s c ON (c.ballot_id = b.id)
+            LEFT JOIN %(vote_plurality)s vpl ON (vpl.vote_id = v.id
+                AND vpl.candidate_id = c.id)
+            LEFT JOIN %(vote_preferential)s vpr ON (vpr.vote_id = v.id
+                AND vpr.candidate_id = c.id)
+            WHERE v.election_id = '%(id)i'
+            GROUP BY v.id, c.id
+            ORDER BY v.id, b.id, c.id
         """
         query %= {
             'vote': Vote._meta.db_table,
@@ -104,9 +103,34 @@ class Election(models.Model):
             'vote_preferential': VotePreferential._meta.db_table,
             'id': self.pk,
         }
+
+        cursor = connection.cursor()
         cursor.execute(query)
-        stats = [(Vote.objects.get(id=row[0]), row[1].split(","))
-                 for row in cursor.fetchall()]
+
+        stats = {
+            'candidates': [],
+            'ballots': [],
+            'votes': {},
+        }
+
+        vote_points = {}
+        for row in cursor.fetchall():
+            vote_id, candidate_id, point = row[0], row[1], row[2]
+            vote_points.setdefault(vote_id, []).append(point)
+            # Every vote in the result set has the same list of candidates, so
+            # we only need to populate the candidates and ballots lists on
+            # the first one.
+            if len(vote_points) == 1:
+                candidate = Candidate.objects.get(id=candidate_id)
+                stats['candidates'].append(candidate)
+                if candidate.ballot not in stats['ballots']:
+                    stats['ballots'].append(candidate.ballot)
+
+        # convert vote_ids into Vote objects
+        for vote_id, points in vote_points.iteritems():
+            vote = Vote.objects.get(id=vote_id)
+            stats['votes'][vote] = points
+
         return stats
 
     def disassociate_accounts(self):
