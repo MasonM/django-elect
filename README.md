@@ -28,7 +28,8 @@ If you want to integrate django-elect with an existing project, follow these ste
 2. Add `django-autocomplete-light` to `INSTALLED_APPS` [as detailed here](https://django-autocomplete-light.readthedocs.io/en/master/install.html#install-in-your-project).
 3. Add `(r'^election/', include('django_elect.urls')),` to the project's `urls.py` file.
 
-# Using Standalone If you don't have an existing Django project, you'll need to create one. Use the
+# Using Standalone
+If you don't have an existing Django project, you'll need to create one. Use the
 project in the "example_project" directory as a starting point and customize the settings.py file
 for your server. See the following pages for more information:
 
